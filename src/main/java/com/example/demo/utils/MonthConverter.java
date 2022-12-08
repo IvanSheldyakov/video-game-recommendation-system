@@ -3,18 +3,18 @@ package com.example.demo.utils;
 public class MonthConverter {
     public static int convert(String month) {
         return switch (month) {
-            case "Jan" -> 0;
-            case "Feb" -> 1;
-            case "Mar" -> 2;
-            case "Apr" -> 3;
-            case "May" -> 4;
-            case "Jun" -> 5;
-            case "Jul" -> 6;
-            case "Aug" -> 7;
-            case "Sep" -> 8;
-            case "Oct" -> 9;
-            case "Nov" -> 10;
-            case "Dec" -> 11;
+            case "Jan" -> 1;
+            case "Feb" -> 2;
+            case "Mar" -> 3;
+            case "Apr" -> 4;
+            case "May" -> 5;
+            case "Jun" -> 6;
+            case "Jul" -> 7;
+            case "Aug" -> 8;
+            case "Sep" -> 9;
+            case "Oct" -> 10;
+            case "Nov" -> 11;
+            case "Dec" -> 12;
             default -> throw new RuntimeException();
         };
     }

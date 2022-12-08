@@ -23,6 +23,7 @@ public class Game {
 
     private String publisher;
 
+    private String rating;
 
     @Column(columnDefinition = "DATE")
     private LocalDate releaseDate;

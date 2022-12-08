@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.repository.GameRepository;
 import com.example.demo.service.Parser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

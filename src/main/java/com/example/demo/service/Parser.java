@@ -21,15 +21,21 @@ public class Parser {
 
     private final WordRepository wordRepository;
 
-    private final ExecutorService executor =  Executors.newFixedThreadPool(8);
+    private final ExecutorService executor = Executors.newFixedThreadPool(8);
 
     public void parse() {
         try {
             for (int i = 0; i <= 198; i++) {
-                PageParser p = new PageParser(0,gameRepository,typeRepository,wordRepository);
-                p.start();
-                break;
+                PageParser parser = new PageParser(i, gameRepository, typeRepository, wordRepository);
+                parser.start();
+                parser.join();
+                if (i == 9) {
+                    System.out.println("done");
+                    break;
+                }
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             executor.shutdown();
         }

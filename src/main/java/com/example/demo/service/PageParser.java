@@ -4,18 +4,15 @@ import com.example.demo.repository.GameRepository;
 import com.example.demo.repository.TypeRepository;
 import com.example.demo.repository.WordRepository;
 import com.example.demo.utils.Constants;
-import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @Configurable
 public class PageParser extends Thread {
-
 
 
     private final String pageUrl;
@@ -28,7 +25,7 @@ public class PageParser extends Thread {
 
     private final WordRepository wordRepository;
 
-    private final ExecutorService executor =  Executors.newFixedThreadPool(8);
+    private final ExecutorService executor = Executors.newFixedThreadPool(8);
 
     public PageParser(int page, GameRepository gameRepository, TypeRepository typeRepository, WordRepository wordRepository) {
         if (page == 0) {
@@ -48,11 +45,20 @@ public class PageParser extends Thread {
             var elements = doc.body().select("a.title");
             for (var elem : elements) {
                 String gameUrl = elem.attr("href"); //https://www.metacritic.com/game/playstation-3/grand-theft-auto-iv/critic-reviews
-                //Constants.mainUrl + gameUrl + Constants.toCriticReviews
-                executor.submit(new GameHandler("https://www.metacritic.com/game/playstation-3/grand-theft-auto-iv/critic-reviews",gameRepository,typeRepository,wordRepository));
-                break;
+
+
+                        GameHandler handler = new GameHandler(
+                                Constants.mainUrl + gameUrl,
+                                gameRepository,
+                                typeRepository,
+                                wordRepository
+                        );
+                        handler.start();
+                        handler.join();
             }
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
             executor.shutdown();

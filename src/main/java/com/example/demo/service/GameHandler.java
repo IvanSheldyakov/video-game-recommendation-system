@@ -6,6 +6,7 @@ import com.example.demo.domain.Word;
 import com.example.demo.repository.GameRepository;
 import com.example.demo.repository.TypeRepository;
 import com.example.demo.repository.WordRepository;
+import com.example.demo.utils.Constants;
 import com.example.demo.utils.MonthConverter;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
@@ -38,36 +39,55 @@ public class GameHandler extends Thread {
     public void run() {
         try {
             StringBuilder text = new StringBuilder();
-            var doc = Jsoup.connect(gameUrl).get();
+            var doc = Jsoup.connect(gameUrl + Constants.toCriticReviews).get();
             var elements = doc.body().select("div.review_body");
             for (var elem : elements) {
                 text.append(elem.text()).append(" ");
             }
             getIgnReview(doc, text);
-
             var map = wordsFinder.find(text.toString());
 
-            String gameName = doc.body().select("div.product_title").get(0).select("a.hover_none").get(0).text();
-            String platform = doc.body().select("div.product_title").get(0).select("span.platform").get(0).text();
-            Integer score = Integer.parseInt(doc.body().select("a.metascore_anchor").get(0).text());
-            String publisher = doc.body().select("div.product_data").get(0).select("span.data").get(0).text();
-            String date = doc.body().select("div.product_data").get(0).select("span.data").get(1).text();
 
-
-            Game game = new Game();
-            game.setName(gameName);
-            game.setPlatform(platform);
-            game.setScore(score);
+            Game game = fillGameInfo(doc);
             game.setVector(countWords(map));
-            game.setReleaseDate(getReleaseDate(date));
-            game.setPublisher(publisher);
             System.out.println(game);
-            //gameRepository.save(game);
-
+            gameRepository.save(game);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Game fillGameInfo(Document doc) throws IOException {
+        String gameName = doc.body().select("div.product_title").get(0).select("a.hover_none").get(0).text();
+        String platform = doc.body().select("div.product_title").get(0).select("span.platform").get(0).text();
+        Integer score = Integer.parseInt(doc.body().select("a.metascore_anchor").get(0).text());
+        String publisher = doc.body().select("div.product_data").get(0).select("span.data").get(0).text();
+        String date = doc.body().select("div.product_data").get(0).select("span.data").get(1).text();
+        String rating = getRating();
+
+        Game game = new Game();
+        game.setName(gameName);
+        game.setPlatform(platform);
+        game.setScore(score);
+        game.setReleaseDate(getReleaseDate(date));
+        game.setPublisher(publisher);
+        game.setRating(rating);
+        return game;
+    }
+
+    private String getRating() throws IOException {
+        var doc = Jsoup.connect(gameUrl).get();
+        var el = doc.body().select("ul.summary_details")
+                .select("li.summary_detail.product_rating")
+                .select("span.data");
+
+        if (el.size() < 1) {
+            return null;
+        } else {
+            return el.get(0).text();
+        }
+
     }
 
     private LocalDate getReleaseDate(String date) {
@@ -108,13 +128,14 @@ public class GameHandler extends Thread {
         for (var elem : elements) {
             String url = elem.attr("href");
             if (url.contains("ign") && url.contains("articles") && !urls.contains(url)) {
-                System.out.println(url);
                 urls.add(url);
                 try {
                     var newDoc = Jsoup.connect(url).get();
                     var elems = newDoc.body().select("section.article-page");
+                    if (elems.size() < 1) {
+                        continue;
+                    }
                     text.append(elems.get(0).text());
-                    System.out.println(elems.get(0).text());
                 } catch (IOException ignored) {
 
                 }
