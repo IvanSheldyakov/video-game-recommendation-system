@@ -3,6 +3,7 @@ package com.example.demo.domain;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -22,7 +23,9 @@ public class Game {
 
     private String publisher;
 
-    private String realiseYear;
+
+    @Column(columnDefinition = "DATE")
+    private LocalDate releaseDate;
 
     @ElementCollection
     private List<Integer> vector;
