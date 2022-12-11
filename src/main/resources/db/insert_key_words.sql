@@ -197,9 +197,11 @@ values ('elegant', 1),
 
 
 
+/*select avg(count) from word_count where typename = 'gloat';
 
+select word from word_count where typename = 'gloat' and count = 16;
 
-
+select avg(count) from word_count where typename = 'fantasy';*/
 
 
 

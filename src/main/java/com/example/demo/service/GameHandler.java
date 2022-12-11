@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.domain.Game;
 import com.example.demo.domain.Type;
 import com.example.demo.domain.Word;
+import com.example.demo.domain.WordCount;
 import com.example.demo.repository.GameRepository;
 import com.example.demo.repository.TypeRepository;
 import com.example.demo.repository.WordCountRepository;
@@ -12,9 +13,6 @@ import com.example.demo.utils.MonthConverter;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -39,7 +37,6 @@ public class GameHandler extends Thread {
     private final WordsFinder wordsFinder = new WordsFinder();
 
     private boolean analyze = true;
-
 
 
     @Override
@@ -126,14 +123,25 @@ public class GameHandler extends Thread {
             vector.add(count);
         }
 
-       /* if (analyze) {
+        if (analyze) {
             Integer idOfType = vector.indexOf(Collections.max(vector)) + 1;
             var type = typeRepository.findById(idOfType);
             String typeName = type.get().getTypeName();
             for (String word : allWords) {
-                //if ()
+                if (wordCountRepository.existsByWordAndTypeName(word, typeName)) {
+                    WordCount wordCount = wordCountRepository.findByWordAndTypeName(word, typeName);
+                    long count = wordCount.getCount() + 1;
+                    wordCount.setCount(count);
+                    wordCountRepository.save(wordCount);
+                } else {
+                    WordCount newWordCount = new WordCount();
+                    newWordCount.setCount(1);
+                    newWordCount.setTypeName(typeName);
+                    newWordCount.setWord(word);
+                    wordCountRepository.save(newWordCount);
+                }
             }
-        }*/
+        }
 
         return vector;
 

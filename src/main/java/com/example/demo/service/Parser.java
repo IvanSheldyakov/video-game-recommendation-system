@@ -17,13 +17,13 @@ public class Parser {
 
     public void parse() {
         try {
-            for (int i = 0; i <= 198; i++) {
+            for (int i = 11; i <= 198; i++) {
                 PageParser parser = beanFactory.getBean(PageParser.class, i);
 
                 parser.start();
                 parser.join();
-                if (i == 3) {
-                    System.out.println("done");
+                if (i == 20) {
+                    //System.out.println("done");
                     break;
                 }
             }
