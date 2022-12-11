@@ -1,9 +1,7 @@
 package com.example.demo.service;
 
-import com.example.demo.repository.GameRepository;
-import com.example.demo.repository.TypeRepository;
-import com.example.demo.repository.WordRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
@@ -13,23 +11,18 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class Parser {
 
-    private final GameRepository gameRepository;
+    private final BeanFactory beanFactory;
 
-
-    private final TypeRepository typeRepository;
-
-
-    private final WordRepository wordRepository;
-
-    private final ExecutorService executor = Executors.newFixedThreadPool(8);
+    private final ExecutorService executor = Executors.newFixedThreadPool(2);
 
     public void parse() {
         try {
             for (int i = 0; i <= 198; i++) {
-                PageParser parser = new PageParser(i, gameRepository, typeRepository, wordRepository);
+                PageParser parser = beanFactory.getBean(PageParser.class, i);
+
                 parser.start();
                 parser.join();
-                if (i == 9) {
+                if (i == 3) {
                     System.out.println("done");
                     break;
                 }

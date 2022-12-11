@@ -5,19 +5,22 @@ import com.example.demo.domain.Type;
 import com.example.demo.domain.Word;
 import com.example.demo.repository.GameRepository;
 import com.example.demo.repository.TypeRepository;
+import com.example.demo.repository.WordCountRepository;
 import com.example.demo.repository.WordRepository;
 import com.example.demo.utils.Constants;
 import com.example.demo.utils.MonthConverter;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 
-@Configurable
+
 @RequiredArgsConstructor
 public class GameHandler extends Thread {
 
@@ -26,13 +29,17 @@ public class GameHandler extends Thread {
 
     private final GameRepository gameRepository;
 
-
     private final TypeRepository typeRepository;
-
 
     private final WordRepository wordRepository;
 
+
+    private final WordCountRepository wordCountRepository;
+
     private final WordsFinder wordsFinder = new WordsFinder();
+
+    private boolean analyze = true;
+
 
 
     @Override
@@ -118,6 +125,16 @@ public class GameHandler extends Thread {
             }
             vector.add(count);
         }
+
+       /* if (analyze) {
+            Integer idOfType = vector.indexOf(Collections.max(vector)) + 1;
+            var type = typeRepository.findById(idOfType);
+            String typeName = type.get().getTypeName();
+            for (String word : allWords) {
+                //if ()
+            }
+        }*/
+
         return vector;
 
     }
