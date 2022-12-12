@@ -20,7 +20,7 @@ import java.util.*;
 
 
 @RequiredArgsConstructor
-public class GameHandler extends Thread {
+public class GameHandler extends Thread{
 
     private final String gameUrl;
 
@@ -37,6 +37,7 @@ public class GameHandler extends Thread {
     private final WordsFinder wordsFinder = new WordsFinder();
 
     private boolean analyze = true;
+
 
 
     @Override
@@ -58,7 +59,7 @@ public class GameHandler extends Thread {
             gameRepository.save(game);
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
         }
     }
 

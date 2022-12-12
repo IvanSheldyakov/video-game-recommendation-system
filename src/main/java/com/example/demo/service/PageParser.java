@@ -1,29 +1,26 @@
 package com.example.demo.service;
 
-import com.example.demo.repository.GameRepository;
-import com.example.demo.repository.TypeRepository;
-import com.example.demo.repository.WordCountRepository;
-import com.example.demo.repository.WordRepository;
 import com.example.demo.utils.Constants;
-import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 
-public class PageParser extends Thread {
+public class PageParser {
 
 
     private final BeanFactory beanFactory;
 
     private final String pageUrl;
 
-    private final ExecutorService executor = Executors.newFixedThreadPool(2);
+    private final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     public PageParser(int page, BeanFactory beanFactory) {
         if (page == 0) {
@@ -34,8 +31,9 @@ public class PageParser extends Thread {
         this.beanFactory = beanFactory;
     }
 
-    @Override
+
     public void run() {
+        List<Future<?>> futures = new ArrayList<>();
         try {
 
             var doc = Jsoup.connect(pageUrl).get();
@@ -43,15 +41,23 @@ public class PageParser extends Thread {
             for (var elem : elements) {
                 String gameUrl = elem.attr("href"); //https://www.metacritic.com/game/playstation-3/grand-theft-auto-iv/critic-reviews
 
-                beanFactory.getBean(GameHandler.class,gameUrl);
+                beanFactory.getBean(GameHandler.class, gameUrl);
 
-                executor.submit(
-                      beanFactory.getBean(GameHandler.class,Constants.mainUrl + gameUrl)
-                );
+                GameHandler gameHandler = beanFactory.getBean(GameHandler.class, Constants.mainUrl + gameUrl);
+                Future<?> future = executor.submit(gameHandler);
+                futures.add(future);
+
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
         } finally {
+            futures.forEach((x) -> {
+                try {
+                    Object o = x.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    System.out.println(e.getMessage());
+                }
+            });
             executor.shutdown();
         }
     }

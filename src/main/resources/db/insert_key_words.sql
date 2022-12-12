@@ -94,7 +94,6 @@ values ('elegant', 1),
        ('own', 7),
        ('self', 7),
        ('sharing', 7),
-       ('new', 7),
        ('immersive', 8),
        ('simulated', 8),
        ('artificial', 8),
@@ -197,11 +196,11 @@ values ('elegant', 1),
 
 
 
-/*select avg(count) from word_count where typename = 'gloat';
+select avg(count) from word_count where typename = 'self-expression';
 
-select word from word_count where typename = 'gloat' and count = 16;
+select word from word_count where typename = 'self-expression' and count = 8;
 
-select avg(count) from word_count where typename = 'fantasy';*/
+select avg(count) from word_count where typename = 'fantasy';
 
 
 

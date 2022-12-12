@@ -20,4 +20,5 @@ public class Type {
 
     @OneToMany(mappedBy = "type")
     private List<Word> words;
+
 }

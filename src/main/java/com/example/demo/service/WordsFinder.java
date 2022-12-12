@@ -18,8 +18,13 @@ public class WordsFinder {
         SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
         String[] tokens = tokenizer.tokenize(text);
 
-        InputStream inputStreamPOSTagger = getClass()
-                .getResourceAsStream("/en-pos-maxent.bin");
+        InputStream inputStreamPOSTagger = null;
+
+
+        inputStreamPOSTagger = getClass()
+                    .getResourceAsStream("/en-pos-maxent.bin");
+
+
         POSModel posModel = new POSModel(inputStreamPOSTagger);
         POSTaggerME posTagger = new POSTaggerME(posModel);
         String[] tags = posTagger.tag(tokens);
