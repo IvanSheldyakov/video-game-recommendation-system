@@ -18,11 +18,8 @@ public class WordsFinder {
         SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
         String[] tokens = tokenizer.tokenize(text);
 
-        InputStream inputStreamPOSTagger = null;
-
-
-        inputStreamPOSTagger = getClass()
-                    .getResourceAsStream("/en-pos-maxent.bin");
+        InputStream inputStreamPOSTagger = getClass()
+                .getResourceAsStream("/en-pos-maxent.bin");
 
 
         POSModel posModel = new POSModel(inputStreamPOSTagger);
@@ -30,14 +27,18 @@ public class WordsFinder {
         String[] tags = posTagger.tag(tokens);
 
         HashMap<String, List<String>> map = new HashMap<>();
-        map.put(Constants.adjective,new ArrayList<>());
-        map.put(Constants.noun,new ArrayList<>());
-        map.put(Constants.nouns,new ArrayList<>());
+        map.put(Constants.adjective, new ArrayList<>());
+        map.put(Constants.noun, new ArrayList<>());
+        map.put(Constants.nouns, new ArrayList<>());
 
         for (int i = 0; i < tags.length; i++) {
             String tag = tags[i];
             if (map.containsKey(tag)) {
-                map.get(tag).add(tokens[i].toLowerCase(Locale.ROOT));
+                String token = tokens[i].toLowerCase(Locale.ROOT);
+                if (token.length() < 3) {
+                    continue;
+                }
+                map.get(tag).add(token);
             }
         }
         return map;
