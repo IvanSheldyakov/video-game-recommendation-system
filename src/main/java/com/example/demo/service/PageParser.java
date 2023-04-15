@@ -15,7 +15,6 @@ import java.util.concurrent.Future;
 
 public class PageParser {
 
-
     private final BeanFactory beanFactory;
 
     private final String pageUrl;
@@ -32,7 +31,7 @@ public class PageParser {
     }
 
 
-    public void run() {
+    public void parse() {
         List<Future<?>> futures = new ArrayList<>();
         try {
 

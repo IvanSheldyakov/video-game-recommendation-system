@@ -196,11 +196,16 @@ values ('elegant', 1),
 
 
 
-select avg(count) from word_count where typename = 'self-expression';
+select avg(count) from word_count where typename = 'acceptance';
 
-select word from word_count where typename = 'self-expression' and count = 8;
+select stddev(count) from word_count where typename = 'acceptance';
 
-select avg(count) from word_count where typename = 'fantasy';
+select word from word_count where typename = 'acceptance' and count = 221;
+
+delete from word_count where length(word) < 3;
+
+select typename, avg(count) from word_count
+group by typename;
 
 
 

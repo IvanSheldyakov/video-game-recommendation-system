@@ -26,18 +26,17 @@ public class ParserConfig {
 
     private final WordCountRepository wordCountRepository;
 
-
     private final BeanFactory beanFactory;
 
     @Bean
     @Scope(scopeName = "prototype")
-    public GameHandler gameHandler(String url){
-        return new GameHandler(url,gameRepository,typeRepository,wordRepository,wordCountRepository);
+    public GameHandler gameHandler(String url) {
+        return new GameHandler(url, gameRepository, typeRepository, wordRepository, wordCountRepository);
     }
 
     @Bean
     @Scope(scopeName = "prototype")
     public PageParser pageParser(int page) {
-        return new PageParser(page,beanFactory);
+        return new PageParser(page, beanFactory);
     }
 }

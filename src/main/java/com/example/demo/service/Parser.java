@@ -1,25 +1,20 @@
 package com.example.demo.service;
 
-import com.example.demo.repository.TypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class Parser {
 
     private final BeanFactory beanFactory;
 
-
-    //  private final ExecutorService executor = Executors.newFixedThreadPool(2);
-
     public void parse() {
         try {
-            for (int i = 6; i <= 30; i++) {
+            for (int i = 85; i <= 130; i++) { //198
                 PageParser parser = beanFactory.getBean(PageParser.class, i);
-
-                parser.run();
+                parser.parse();
 
             }
             System.out.println("done");

@@ -17,27 +17,19 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
-public class GameHandler extends Thread{
+public class GameHandler extends Thread {
 
     private final String gameUrl;
-
-
     private final GameRepository gameRepository;
-
     private final TypeRepository typeRepository;
-
     private final WordRepository wordRepository;
-
-
     private final WordCountRepository wordCountRepository;
-
     private final WordsFinder wordsFinder = new WordsFinder();
-
-    private boolean analyze = true;
-
+    public static boolean findNewKeywords = true;
 
 
     @Override
@@ -51,7 +43,6 @@ public class GameHandler extends Thread{
             }
             getIgnReview(doc, text);
             var map = wordsFinder.find(text.toString());
-
 
             Game game = fillGameInfo(doc);
             game.setVector(countWords(map));
@@ -107,67 +98,72 @@ public class GameHandler extends Thread{
     }
 
     private List<Integer> countWords(HashMap<String, List<String>> map) {
-        List<String> allWords = new ArrayList<>();
-        map.values().forEach(allWords::addAll);
-        List<Type> types = typeRepository.findAll();
-        List<Integer> vector = new ArrayList<>();
-        for (Type type : types) {
-            int count = 0;
-            List<String> wordList = wordRepository.findWordsByType(type).stream().map(Word::getWord).toList();
-            for (String kWord : wordList) {
-                for (String word : allWords) {
-                    if (kWord.equals(word)) {
-                        count++;
-                    }
-                }
-            }
-            vector.add(count);
-        }
+        List<String> allWords = map.values().stream()
+                .flatMap(List::stream)
+                .toList();
 
-        if (analyze) {
-            Integer idOfType = vector.indexOf(Collections.max(vector)) + 1;
-            var type = typeRepository.findById(idOfType);
-            String typeName = type.get().getTypeName();
-            for (String word : allWords) {
-                if (wordCountRepository.existsByWordAndTypeName(word, typeName)) {
-                    WordCount wordCount = wordCountRepository.findByWordAndTypeName(word, typeName);
-                    long count = wordCount.getCount() + 1;
-                    wordCount.setCount(count);
-                    wordCountRepository.save(wordCount);
-                } else {
-                    WordCount newWordCount = new WordCount();
-                    newWordCount.setCount(1);
-                    newWordCount.setTypeName(typeName);
-                    newWordCount.setWord(word);
-                    wordCountRepository.save(newWordCount);
-                }
-            }
+        List<Type> types = typeRepository.findAll();
+        List<Integer> vector = types.stream()
+                .map(type -> {
+                    List<String> wordList = wordRepository.findWordsByType(type).stream()
+                            .map(Word::getWord)
+                            .toList();
+                    return (int) allWords.stream()
+                            .filter(wordList::contains)
+                            .count();
+                })
+                .toList();
+
+        if (findNewKeywords) {
+            countWordsForFindingNewKeywords(vector, allWords);
         }
 
         return vector;
+    }
 
+    private void countWordsForFindingNewKeywords(List<Integer> vector, List<String> allWords) {
+        Integer idOfType = vector.indexOf(Collections.max(vector)) + 1;
+        var type = typeRepository.findById(idOfType);
+        String typeName = type.get().getTypeName();
+
+        Map<String, Long> wordCounts = allWords.stream()
+                .collect(Collectors.groupingBy(
+                        word -> word,
+                        Collectors.counting()
+                ));
+
+        wordCounts.forEach((word, count) -> {
+            if (wordCountRepository.existsByWordAndTypeName(word, typeName)) {
+                WordCount wordCount = wordCountRepository.findByWordAndTypeName(word, typeName);
+                wordCount.setCount(wordCount.getCount() + count);
+                wordCountRepository.save(wordCount);
+            } else {
+                WordCount newWordCount = new WordCount();
+                newWordCount.setCount(count);
+                newWordCount.setTypeName(typeName);
+                newWordCount.setWord(word);
+                wordCountRepository.save(newWordCount);
+            }
+        });
     }
 
     private void getIgnReview(Document doc, StringBuilder text) {
-        Set<String> urls = new HashSet<>();
-        var elements = doc.body().select("a.external");
-        for (var elem : elements) {
-            String url = elem.attr("href");
-            if (url.contains("ign") && url.contains("articles") && !urls.contains(url)) {
-                urls.add(url);
-                try {
-                    var newDoc = Jsoup.connect(url).get();
-                    var elems = newDoc.body().select("section.article-page");
-                    if (elems.size() < 1) {
-                        continue;
-                    }
-                    text.append(elems.get(0).text());
-                } catch (IOException ignored) {
+        Set<String> urls = doc.body().select("a.external").stream()
+                .map(elem -> elem.attr("href"))
+                .filter(url -> url.contains("ign") && url.contains("articles"))
+                .collect(Collectors.toSet());
 
+        urls.forEach(url -> {
+            try {
+                var newDoc = Jsoup.connect(url).get();
+                var elems = newDoc.body().select("section.article-page");
+                if (elems.size() < 1) {
+                    return;
                 }
-
+                text.append(elems.get(0).text());
+            } catch (IOException ignored) {
             }
-        }
+        });
     }
 
 }

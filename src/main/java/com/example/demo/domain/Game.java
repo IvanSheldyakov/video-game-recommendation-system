@@ -23,10 +23,15 @@ public class Game {
 
     private String publisher;
 
+    private String genre;
+
     private String rating;
 
     @Column(columnDefinition = "DATE")
     private LocalDate releaseDate;
+
+    @Lob
+    private String summary;
 
     @ElementCollection
     private List<Integer> vector;
