@@ -5,12 +5,12 @@ import org.jsoup.Jsoup;
 import org.springframework.beans.factory.BeanFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 
 public class PageParser {
@@ -32,33 +32,32 @@ public class PageParser {
 
 
     public void parse() {
-        List<Future<?>> futures = new ArrayList<>();
+        List<Future<?>> futures;
         try {
-
             var doc = Jsoup.connect(pageUrl).get();
             var elements = doc.body().select("a.title");
-            for (var elem : elements) {
-                String gameUrl = elem.attr("href"); //https://www.metacritic.com/game/playstation-3/grand-theft-auto-iv/critic-reviews
 
-                beanFactory.getBean(GameHandler.class, gameUrl);
+            futures = elements.stream()
+                    .map(elem -> elem.attr("href"))
+                    .map(gameUrl -> beanFactory.getBean(GameHandler.class, Constants.mainUrl + gameUrl))
+                    .map(executor::submit)
+                    .collect(Collectors.toList());
 
-                GameHandler gameHandler = beanFactory.getBean(GameHandler.class, Constants.mainUrl + gameUrl);
-                Future<?> future = executor.submit(gameHandler);
-                futures.add(future);
-
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        } finally {
-            futures.forEach((x) -> {
+            // Ожидание завершения всех задач и обработка исключений
+            futures.forEach(future -> {
                 try {
-                    Object o = x.get();
+                    future.get();
                 } catch (InterruptedException | ExecutionException e) {
                     System.out.println(e.getMessage());
                 }
             });
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } finally {
             executor.shutdown();
         }
     }
+
 
 }
