@@ -1,27 +1,23 @@
 package com.example.demo.domain;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
-
 import java.util.List;
 
-
+@Table(name = "publisher")
 @Entity
-@Table(name = "type")
-@Data
-public class Type {
+@Getter
+@Setter
+public class Publisher {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String typeName;
+    private String name;
 
-    @OneToMany(mappedBy = "type")
-    private List<Word> words;
-
-    @OneToMany(mappedBy = "type")
+    @OneToMany(mappedBy = "publisher")
     private List<Game> games;
-
 }

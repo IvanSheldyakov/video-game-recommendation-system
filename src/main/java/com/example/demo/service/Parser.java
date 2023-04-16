@@ -12,7 +12,7 @@ public class Parser {
 
     public void parse() {
         try {
-            for (int i = 85; i <= 130; i++) { //198
+            for (int i = 0; i <= 0; i++) { //198
                 PageParser parser = beanFactory.getBean(PageParser.class, i);
                 parser.parse();
 

@@ -13,6 +13,7 @@ import com.example.demo.utils.MonthConverter;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -33,10 +34,12 @@ public class GameHandler extends Thread {
 
 
     @Override
+    @Transactional
     public void run() {
         try {
             StringBuilder text = new StringBuilder();
             var doc = Jsoup.connect(gameUrl + Constants.toCriticReviews).get();
+
             var elements = doc.body().select("div.review_body");
             for (var elem : elements) {
                 text.append(elem.text()).append(" ");
@@ -45,7 +48,7 @@ public class GameHandler extends Thread {
             var map = wordsFinder.find(text.toString());
 
             Game game = fillGameInfo(doc);
-            game.setVector(countWords(map));
+            analyzeTypeOfGame(map,game);
             System.out.println(game);
             gameRepository.save(game);
 
@@ -54,13 +57,21 @@ public class GameHandler extends Thread {
         }
     }
 
-    private Game fillGameInfo(Document doc) throws IOException {
+    private Game fillGameInfo(Document doc) {
         String gameName = doc.body().select("div.product_title").get(0).select("a.hover_none").get(0).text();
         String platform = doc.body().select("div.product_title").get(0).select("span.platform").get(0).text();
         Integer score = Integer.parseInt(doc.body().select("a.metascore_anchor").get(0).text());
         String publisher = doc.body().select("div.product_data").get(0).select("span.data").get(0).text();
         String date = doc.body().select("div.product_data").get(0).select("span.data").get(1).text();
-        String rating = getRating();
+
+        String rating = null;
+        String summary = null;
+        try {
+            var gameDoc = Jsoup.connect(gameUrl).get();
+            rating = getRating(gameDoc);
+            summary = getSummary(gameDoc);
+        } catch (IOException ignored) {
+        }
 
         Game game = new Game();
         game.setName(gameName);
@@ -69,11 +80,19 @@ public class GameHandler extends Thread {
         game.setReleaseDate(getReleaseDate(date));
         game.setPublisher(publisher);
         game.setRating(rating);
+        game.setSummary(summary);
         return game;
     }
 
-    private String getRating() throws IOException {
-        var doc = Jsoup.connect(gameUrl).get();
+    private String getSummary(Document doc) {
+        return doc.body()
+                .select("div.summary_wrap")
+                .select("div.section.product_details")
+                .select("div.details.main_details")
+                .select("span.blurb.blurb_collapsed").text();
+    }
+
+    private String getRating(Document doc) throws IOException {
         var el = doc.body().select("ul.summary_details")
                 .select("li.summary_detail.product_rating")
                 .select("span.data");
@@ -86,6 +105,8 @@ public class GameHandler extends Thread {
 
     }
 
+
+
     private LocalDate getReleaseDate(String date) {
         String[] parts = date.split(",");
         String[] monthAndDay = parts[0].split(" ");
@@ -97,7 +118,7 @@ public class GameHandler extends Thread {
 
     }
 
-    private List<Integer> countWords(HashMap<String, List<String>> map) {
+    private void analyzeTypeOfGame(HashMap<String, List<String>> map, Game game) {
         List<String> allWords = map.values().stream()
                 .flatMap(List::stream)
                 .toList();
@@ -114,17 +135,21 @@ public class GameHandler extends Thread {
                 })
                 .toList();
 
+        game.setVector(vector);
+        String typeName = analyzeType(vector);
+        game.setType(typeName);
         if (findNewKeywords) {
-            countWordsForFindingNewKeywords(vector, allWords);
+            countWordsForFindingNewKeywords(typeName, allWords);
         }
-
-        return vector;
     }
 
-    private void countWordsForFindingNewKeywords(List<Integer> vector, List<String> allWords) {
+    private String analyzeType(List<Integer> vector) {
         Integer idOfType = vector.indexOf(Collections.max(vector)) + 1;
         var type = typeRepository.findById(idOfType);
-        String typeName = type.get().getTypeName();
+        return type.get().getTypeName();
+    }
+
+    private void countWordsForFindingNewKeywords(String typeName, List<String> allWords) {
 
         Map<String, Long> wordCounts = allWords.stream()
                 .collect(Collectors.groupingBy(
