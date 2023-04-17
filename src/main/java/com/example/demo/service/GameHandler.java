@@ -1,18 +1,14 @@
 package com.example.demo.service;
 
-import com.example.demo.domain.Game;
-import com.example.demo.domain.Type;
-import com.example.demo.domain.Word;
-import com.example.demo.domain.WordCount;
-import com.example.demo.repository.GameRepository;
-import com.example.demo.repository.TypeRepository;
-import com.example.demo.repository.WordCountRepository;
-import com.example.demo.repository.WordRepository;
+import com.example.demo.domain.*;
+import com.example.demo.repository.*;
 import com.example.demo.utils.Constants;
 import com.example.demo.utils.MonthConverter;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -29,9 +25,15 @@ public class GameHandler extends Thread {
     private final TypeRepository typeRepository;
     private final WordRepository wordRepository;
     private final WordCountRepository wordCountRepository;
+    private final GenreRepository genreRepository;
+    private final PlatformRepository platformRepository;
+    private final PublisherRepository publisherRepository;
+    private final RatingRepository ratingRepository;
     private final WordsFinder wordsFinder = new WordsFinder();
+
     public static boolean findNewKeywords = true;
 
+    private final static Object LOCK = new Object();
 
     @Override
     @Transactional
@@ -39,7 +41,6 @@ public class GameHandler extends Thread {
         try {
             StringBuilder text = new StringBuilder();
             var doc = Jsoup.connect(gameUrl + Constants.toCriticReviews).get();
-
             var elements = doc.body().select("div.review_body");
             for (var elem : elements) {
                 text.append(elem.text()).append(" ");
@@ -47,10 +48,15 @@ public class GameHandler extends Thread {
             getIgnReview(doc, text);
             var map = wordsFinder.find(text.toString());
 
-            Game game = fillGameInfo(doc);
-            analyzeTypeOfGame(map,game);
+            Game game;
+            //synchronized (LOCK) {
+                game = fillGameInfo(doc);
+                gameRepository.save(game);
+            //}
+
+            analyzeTypeOfGame(map, game);
             System.out.println(game);
-            gameRepository.save(game);
+
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -58,41 +64,63 @@ public class GameHandler extends Thread {
     }
 
     private Game fillGameInfo(Document doc) {
-        String gameName = doc.body().select("div.product_title").get(0).select("a.hover_none").get(0).text();
-        String platform = doc.body().select("div.product_title").get(0).select("span.platform").get(0).text();
-        Integer score = Integer.parseInt(doc.body().select("a.metascore_anchor").get(0).text());
-        String publisher = doc.body().select("div.product_data").get(0).select("span.data").get(0).text();
-        String date = doc.body().select("div.product_data").get(0).select("span.data").get(1).text();
+        String gameName = doc.body()
+                .select("div.product_title").get(0)
+                .select("a.hover_none").get(0).text().trim();
 
-        String rating = null;
+        Integer score = Integer.parseInt(doc.body().select("a.metascore_anchor").get(0).text().trim());
+        String date = doc.body().select("div.product_data").get(0).select("span.data").get(1).text().trim();
+
+        Rating rating = null;
         String summary = null;
+        String trailerUrl = null;
+        Set<Genre> genres = new HashSet<>();
         try {
             var gameDoc = Jsoup.connect(gameUrl).get();
             rating = getRating(gameDoc);
             summary = getSummary(gameDoc);
+            genres = getGenres(gameDoc);
+            trailerUrl = getTrailerUrl(gameDoc);
         } catch (IOException ignored) {
         }
 
         Game game = new Game();
         game.setName(gameName);
-        game.setPlatform(platform);
+        game.getPlatforms().add(getPlatform(doc));
+        game.getGenres().addAll(genres);
         game.setScore(score);
         game.setReleaseDate(getReleaseDate(date));
-        game.setPublisher(publisher);
+        game.setPublisher(getPublisher(doc));
         game.setRating(rating);
         game.setSummary(summary);
+        game.setTrailerLink(trailerUrl);
         return game;
     }
 
-    private String getSummary(Document doc) {
-        return doc.body()
-                .select("div.summary_wrap")
-                .select("div.section.product_details")
-                .select("div.details.main_details")
-                .select("span.blurb.blurb_collapsed").text();
+    private Platform getPlatform(Document doc) {
+        String platform = doc.body()
+                .select("div.product_title").get(0)
+                .select("span.platform").get(0).text().trim();
+        return platformRepository.findByPlatform(platform).orElse(new Platform(platform));
     }
 
-    private String getRating(Document doc) throws IOException {
+    private String getTrailerUrl(Document doc) {
+        Element element = doc.getElementById("videoContainer_wrapper");
+        if (element == null) {
+            return null;
+        } else {
+            return element.attr("data-mcvideourl").trim();
+        }
+    }
+
+    private Publisher getPublisher(Document doc) {
+        String publisher = doc.body()
+                .select("div.product_data").get(0)
+                .select("span.data").get(0).text().trim();
+        return publisherRepository.findByPublisher(publisher).orElse(new Publisher(publisher));
+    }
+
+    private Rating getRating(Document doc) {
         var el = doc.body().select("ul.summary_details")
                 .select("li.summary_detail.product_rating")
                 .select("span.data");
@@ -100,11 +128,30 @@ public class GameHandler extends Thread {
         if (el.size() < 1) {
             return null;
         } else {
-            return el.get(0).text();
+            String rating = el.get(0).text().trim();
+            return ratingRepository.findByRating(rating).orElse(new Rating(rating));
         }
-
     }
 
+    private Set<Genre> getGenres(Document doc) {
+        Elements elements = doc.body()
+                .select("div.summary_wrap")
+                .select("div.section.product_details")
+                .select("div.details.side_details")
+                .select("li.summary_detail.product_genre").select("span.data");
+        return elements.stream()
+                .map(Element::text)
+                .map(genreName -> genreRepository.findByGenre(genreName).orElse(new Genre(genreName)))
+                .collect(Collectors.toSet());
+    }
+
+    private String getSummary(Document doc) {
+        return doc.body()
+                .select("div.summary_wrap")
+                .select("div.section.product_details")
+                .select("div.details.main_details")
+                .select("span.blurb.blurb_collapsed").text().trim();
+    }
 
 
     private LocalDate getReleaseDate(String date) {
@@ -136,17 +183,17 @@ public class GameHandler extends Thread {
                 .toList();
 
         game.setVector(vector);
-        String typeName = analyzeType(vector);
-        game.setType(typeName);
+        Type type = getType(vector);
+        game.setType(type);
         if (findNewKeywords) {
-            countWordsForFindingNewKeywords(typeName, allWords);
+            countWordsForFindingNewKeywords(type.getTypeName(), allWords);
         }
     }
 
-    private String analyzeType(List<Integer> vector) {
+    private Type getType(List<Integer> vector) {
         Integer idOfType = vector.indexOf(Collections.max(vector)) + 1;
-        var type = typeRepository.findById(idOfType);
-        return type.get().getTypeName();
+        return typeRepository.findById(idOfType).orElseThrow();
+
     }
 
     private void countWordsForFindingNewKeywords(String typeName, List<String> allWords) {

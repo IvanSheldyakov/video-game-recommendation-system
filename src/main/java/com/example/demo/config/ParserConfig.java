@@ -1,11 +1,9 @@
 package com.example.demo.config;
 
-import com.example.demo.repository.GameRepository;
-import com.example.demo.repository.TypeRepository;
-import com.example.demo.repository.WordCountRepository;
-import com.example.demo.repository.WordRepository;
+import com.example.demo.repository.*;
 import com.example.demo.service.GameHandler;
 import com.example.demo.service.PageParser;
+import com.example.demo.service.WordsFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Bean;
@@ -19,19 +17,29 @@ import org.springframework.context.annotation.Scope;
 public class ParserConfig {
 
     private final GameRepository gameRepository;
-
     private final TypeRepository typeRepository;
-
     private final WordRepository wordRepository;
-
     private final WordCountRepository wordCountRepository;
-
+    private final GenreRepository genreRepository;
+    private final PlatformRepository platformRepository;
+    private final PublisherRepository publisherRepository;
+    private final RatingRepository ratingRepository;
     private final BeanFactory beanFactory;
 
     @Bean
     @Scope(scopeName = "prototype")
     public GameHandler gameHandler(String url) {
-        return new GameHandler(url, gameRepository, typeRepository, wordRepository, wordCountRepository);
+        return new GameHandler(
+                url,
+                gameRepository,
+                typeRepository,
+                wordRepository,
+                wordCountRepository,
+                genreRepository,
+                platformRepository,
+                publisherRepository,
+                ratingRepository
+        );
     }
 
     @Bean
