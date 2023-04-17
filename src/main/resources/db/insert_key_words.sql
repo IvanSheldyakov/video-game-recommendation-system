@@ -39,14 +39,14 @@ values ('visuals', 1),
        ('dreamlike', 2),
        ('surreal', 2),
        ('storytelling', 3),
-       ('plot', 3),
+       ('nonlinear', 3),
        ('intrigue', 3),
-       ('drama', 3),
+       ('subplot', 3),
        ('narration', 3),
-       ('story', 3),
+       ('emotional', 3),
        ('narrative', 3),
-       ('tale', 3),
-       ('storyline', 3),
+       ('captivating', 3),
+       ('unpredictable', 3),
        ('twist', 3),
        ('challenge', 4),
        ('skill', 4),
@@ -179,7 +179,7 @@ values ('visuals', 1),
        ('trials', 16),
        ('attempt', 16);
 
-
+select count(*) from game where type_id = 3;
 
 
 

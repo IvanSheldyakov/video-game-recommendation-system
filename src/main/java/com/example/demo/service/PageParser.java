@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.domain.Game;
 import com.example.demo.utils.Constants;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.BeanFactory;
@@ -32,28 +33,25 @@ public class PageParser {
 
 
     public void parse() {
-        List<Future<?>> futures;
+
         try {
             var doc = Jsoup.connect(pageUrl).get();
             var elements = doc.body().select("a.title");
 
-            futures = elements.stream()
+            var gameHandlers = elements.stream()
                     .map(elem -> elem.attr("href"))
                     .map(gameUrl -> beanFactory.getBean(GameHandler.class, Constants.mainUrl + gameUrl))
-                    .map(executor::submit)
                     .collect(Collectors.toList());
+            for (GameHandler handler : gameHandlers) {
+                handler.run();
+                handler.join();
+            }
 
-            // Ожидание завершения всех задач и обработка исключений
-            futures.forEach(future -> {
-                try {
-                    future.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    System.out.println(e.getMessage());
-                }
-            });
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             executor.shutdown();
         }

@@ -2,6 +2,7 @@ package com.example.demo.domain;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.type.TextType;
 
 import javax.persistence.*;
 import java.time.LocalDate;
