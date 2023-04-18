@@ -173,10 +173,10 @@ public class GameHandler extends Thread {
         List<Type> types = typeRepository.findAll();
         List<Integer> vector = types.stream()
                 .map(type -> {
-                    List<String> wordList = wordRepository.findWordsByType(type).stream()
+                    List<String> wordList = wordRepository.findWordsByType(type).stream().parallel()
                             .map(Word::getWord)
                             .toList();
-                    return (int) allWords.stream()
+                    return (int) allWords.stream().parallel()
                             .filter(wordList::contains)
                             .count();
                 })
@@ -198,7 +198,7 @@ public class GameHandler extends Thread {
 
     private void countWordsForFindingNewKeywords(String typeName, List<String> allWords) {
 
-        Map<String, Long> wordCounts = allWords.stream()
+        Map<String, Long> wordCounts = allWords.stream().parallel()
                 .collect(Collectors.groupingBy(
                         word -> word,
                         Collectors.counting()

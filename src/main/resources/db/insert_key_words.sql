@@ -57,7 +57,7 @@ values ('visuals', 1),
        ('puzzle', 4),
        ('tactics', 4),
        ('strategy', 4),
-       ('difficulty', 4),
+       ('difficult', 4),
        ('companionship', 5),
        ('companionship', 5),
        ('friendship', 5),
@@ -179,7 +179,7 @@ values ('visuals', 1),
        ('trials', 16),
        ('attempt', 16);
 
-select count(*) from game where type_id = 3;
+select word from word_count where typename = 'sensation' and count > 5 and count < 9;
 
 
 

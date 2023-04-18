@@ -2,6 +2,7 @@ package com.example.demo.domain;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -10,6 +11,7 @@ import javax.persistence.*;
 @Table(name = "words")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Word {
 
     @Id
@@ -18,7 +20,20 @@ public class Word {
 
     private String word;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "type_id")
     private Type type;
+
+    public Word(String word, Type type) {
+        this.word = word;
+        this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        return "Word{" +
+                ", word='" + word + '\'' +
+                ", type=" + type.getTypeName() +
+                '}';
+    }
 }
