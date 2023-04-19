@@ -34,14 +34,15 @@ public class KeywordsService {
                                 .map(Word::getWord)).collect(Collectors.toList());
 
         List<Word> newKeyWords = new ArrayList<>();
-        types.stream().forEach(
+        types.forEach(
                 type -> {
                     List<WordCount> countList = wordCountRepository.findAllByTypeNameOrderByCountAsc(type.getTypeName());
+                    long gameCount = type.getGames().stream().count();
                     if (countList.isEmpty()) return;
-                    Bounds bounds = findBounds(countList);
-                    System.out.println(bounds + "---------------------------------------------------------------------------------------------------------------------");
+                   // Bounds bounds = findBounds(countList);
+                    //System.out.println(bounds + "---------------------------------------------------------------------------------------------------------------------");
                     countList.stream()
-                            .filter(wordCount -> bounds.inBounds(wordCount.getCount()))
+                            .filter(wordCount -> wordCount.getGameIds().size() == gameCount)
                             .map(WordCount::getWord)
                             .filter(word -> !allKeywords.contains(word))
                             .forEach(newKeyword -> {

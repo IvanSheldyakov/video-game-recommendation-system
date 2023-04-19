@@ -56,10 +56,10 @@ values ('visuals', 1),
        ('sophisticated', 4),
        ('puzzle', 4),
        ('tactics', 4),
-       ('strategy', 4),
+       ('reaction', 4),
        ('difficult', 4),
        ('companionship', 5),
-       ('companionship', 5),
+       ('сooperation', 5),
        ('friendship', 5),
        ('teamwork', 5),
        ('social', 5),
@@ -84,9 +84,9 @@ values ('visuals', 1),
        ('artistry', 7),
        ('individuality', 7),
        ('personalization', 7),
-       ('style', 7),
+       ('expressiveness', 7),
        ('originality', 7),
-       ('design', 7),
+       ('art', 7),
        ('craft',7),
        ('acceptance', 8),
        ('inclusion', 8),
@@ -179,7 +179,7 @@ values ('visuals', 1),
        ('trials', 16),
        ('attempt', 16);
 
-select word from word_count where typename = 'sensation' and count > 5 and count < 9;
+
 
 
 

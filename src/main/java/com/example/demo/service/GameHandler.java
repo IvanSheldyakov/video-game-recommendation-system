@@ -48,11 +48,7 @@ public class GameHandler extends Thread {
             getIgnReview(doc, text);
             var map = wordsFinder.find(text.toString());
 
-            Game game;
-            //synchronized (LOCK) {
-                game = fillGameInfo(doc);
-                gameRepository.save(game);
-            //}
+            Game game = gameRepository.save(fillGameInfo(doc));
 
             analyzeTypeOfGame(map, game);
             System.out.println(game);
@@ -186,7 +182,7 @@ public class GameHandler extends Thread {
         Type type = getType(vector);
         game.setType(type);
         if (findNewKeywords) {
-            countWordsForFindingNewKeywords(type.getTypeName(), allWords);
+            countWordsForFindingNewKeywords(type.getTypeName(), allWords, game);
         }
     }
 
@@ -196,7 +192,7 @@ public class GameHandler extends Thread {
 
     }
 
-    private void countWordsForFindingNewKeywords(String typeName, List<String> allWords) {
+    private void countWordsForFindingNewKeywords(String typeName, List<String> allWords, Game game) {
 
         Map<String, Long> wordCounts = allWords.stream().parallel()
                 .collect(Collectors.groupingBy(
@@ -208,12 +204,14 @@ public class GameHandler extends Thread {
             if (wordCountRepository.existsByWordAndTypeName(word, typeName)) {
                 WordCount wordCount = wordCountRepository.findByWordAndTypeName(word, typeName);
                 wordCount.setCount(wordCount.getCount() + count);
+                wordCount.getGameIds().add(game.getId());
                 wordCountRepository.save(wordCount);
             } else {
                 WordCount newWordCount = new WordCount();
                 newWordCount.setCount(count);
                 newWordCount.setTypeName(typeName);
                 newWordCount.setWord(word);
+                newWordCount.getGameIds().add(game.getId());
                 wordCountRepository.save(newWordCount);
             }
         });
