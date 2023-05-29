@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,26 +24,32 @@ public class KeywordsService {
     private final TypeRepository typeRepository;
     private final WordRepository wordRepository;
 
-    public static double k = 0;
+    public static double k = 1.5;
 
     @Transactional
     public void update() {
         List<Type> types = typeRepository.findAll();
-        List<String> allKeywords = types.stream()
+        Set<String> allKeywords = types.stream()
                 .flatMap(type ->
                         wordRepository.findWordsByType(type).stream()
-                                .map(Word::getWord)).collect(Collectors.toList());
+                                .map(Word::getWord)).collect(Collectors.toSet());
 
         List<Word> newKeyWords = new ArrayList<>();
         types.forEach(
                 type -> {
                     List<WordCount> countList = wordCountRepository.findAllByTypeNameOrderByCountAsc(type.getTypeName());
-                    long gameCount = type.getGames().stream().count();
+                    double gameCount = type.getGames().size() * 0.8;
                     if (countList.isEmpty()) return;
-                   // Bounds bounds = findBounds(countList);
-                    //System.out.println(bounds + "---------------------------------------------------------------------------------------------------------------------");
-                    countList.stream()
-                            .filter(wordCount -> wordCount.getGameIds().size() == gameCount)
+
+                    List<WordCount> list = countList.stream().parallel()
+                            .filter(wordCount -> wordCount.getInGames() > gameCount)
+                            .collect(Collectors.toList());
+
+                    Bounds bounds = findBounds(list);
+                    System.out.println(bounds + "---------------------------------------------------------------------------------------------------------------------");
+
+                    list.stream().parallel()
+                            .filter(wordCount -> bounds.inBounds(wordCount.getCount()))
                             .map(WordCount::getWord)
                             .filter(word -> !allKeywords.contains(word))
                             .forEach(newKeyword -> {
@@ -77,7 +84,7 @@ public class KeywordsService {
         Double IQR = Q3 - Q1;
         Double lower = Q1 - (IQR * k);
         Double upper = Q3 + (IQR * k);
-        return new Bounds(lower, upper);
+        return new Bounds(Q1, Q3);
 
     }
 

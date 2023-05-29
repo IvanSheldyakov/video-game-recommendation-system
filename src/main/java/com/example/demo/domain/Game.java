@@ -2,7 +2,6 @@ package com.example.demo.domain;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.type.TextType;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -30,7 +29,7 @@ public class Game {
     @Column(name = "release_date", columnDefinition = "DATE")
     private LocalDate releaseDate;
 
-    @Lob
+    @Column(name = "summary", columnDefinition = "text")
     private String summary;
 
     @ElementCollection

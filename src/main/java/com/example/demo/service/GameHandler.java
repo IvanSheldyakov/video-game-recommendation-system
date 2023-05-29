@@ -33,7 +33,6 @@ public class GameHandler extends Thread {
 
     public static boolean findNewKeywords = true;
 
-    private final static Object LOCK = new Object();
 
     @Override
     @Transactional
@@ -182,7 +181,7 @@ public class GameHandler extends Thread {
         Type type = getType(vector);
         game.setType(type);
         if (findNewKeywords) {
-            countWordsForFindingNewKeywords(type.getTypeName(), allWords, game);
+            countWordsForFindingNewKeywords(type.getTypeName(), allWords);
         }
     }
 
@@ -192,8 +191,9 @@ public class GameHandler extends Thread {
 
     }
 
-    private void countWordsForFindingNewKeywords(String typeName, List<String> allWords, Game game) {
+    private void countWordsForFindingNewKeywords(String typeName, List<String> allWords) {
 
+        Set<WordCount> wordCountsToSave = new HashSet<>();
         Map<String, Long> wordCounts = allWords.stream().parallel()
                 .collect(Collectors.groupingBy(
                         word -> word,
@@ -201,21 +201,25 @@ public class GameHandler extends Thread {
                 ));
 
         wordCounts.forEach((word, count) -> {
-            if (wordCountRepository.existsByWordAndTypeName(word, typeName)) {
-                WordCount wordCount = wordCountRepository.findByWordAndTypeName(word, typeName);
+            Optional<WordCount> maybeWordCount = wordCountRepository.findByWordAndTypeName(word, typeName);
+            if (maybeWordCount.isPresent()) {
+                WordCount wordCount = maybeWordCount.get();
                 wordCount.setCount(wordCount.getCount() + count);
-                wordCount.getGameIds().add(game.getId());
-                wordCountRepository.save(wordCount);
+                wordCount.setInGames(wordCount.getInGames() + 1);
+                wordCountsToSave.add(wordCount);
             } else {
                 WordCount newWordCount = new WordCount();
                 newWordCount.setCount(count);
                 newWordCount.setTypeName(typeName);
                 newWordCount.setWord(word);
-                newWordCount.getGameIds().add(game.getId());
-                wordCountRepository.save(newWordCount);
+                newWordCount.setInGames(1);
+                wordCountsToSave.add(newWordCount);
             }
         });
+        wordCountRepository.saveAll(wordCountsToSave);
     }
+
+
 
     private void getIgnReview(Document doc, StringBuilder text) {
         Set<String> urls = doc.body().select("a.external").stream()

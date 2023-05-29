@@ -1,17 +1,12 @@
 package com.example.demo.service;
 
-import com.example.demo.domain.Game;
 import com.example.demo.utils.Constants;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.BeanFactory;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 
 public class PageParser {
@@ -20,7 +15,7 @@ public class PageParser {
 
     private final String pageUrl;
 
-    private final ExecutorService executor = Executors.newFixedThreadPool(4);
+   // private final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     public PageParser(int page, BeanFactory beanFactory) {
         if (page == 0) {
@@ -40,8 +35,7 @@ public class PageParser {
 
             var gameHandlers = elements.stream()
                     .map(elem -> elem.attr("href"))
-                    .map(gameUrl -> beanFactory.getBean(GameHandler.class, Constants.mainUrl + gameUrl))
-                    .collect(Collectors.toList());
+                    .map(gameUrl -> beanFactory.getBean(GameHandler.class, Constants.mainUrl + gameUrl)).toList();
             for (GameHandler handler : gameHandlers) {
                 handler.run();
                 handler.join();
@@ -53,7 +47,7 @@ public class PageParser {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            executor.shutdown();
+           // executor.shutdown();
         }
     }
 
