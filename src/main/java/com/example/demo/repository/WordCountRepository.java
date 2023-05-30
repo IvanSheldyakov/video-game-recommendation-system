@@ -15,4 +15,6 @@ public interface WordCountRepository extends JpaRepository<WordCount, Long> {
     Optional<WordCount> findByWordAndTypeName(String word, String typeName);
 
     List<WordCount> findAllByTypeNameOrderByCountAsc(String typeName);
+
+
 }

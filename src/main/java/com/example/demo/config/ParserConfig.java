@@ -3,7 +3,6 @@ package com.example.demo.config;
 import com.example.demo.repository.*;
 import com.example.demo.service.GameHandler;
 import com.example.demo.service.PageParser;
-import com.example.demo.service.WordsFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Bean;

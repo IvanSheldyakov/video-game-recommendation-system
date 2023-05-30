@@ -1,0 +1,39 @@
+package com.example.demo.domain;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import javax.persistence.*;
+import java.util.Objects;
+
+@Entity
+@Table(name = "block_word")
+@Getter
+@Setter
+@NoArgsConstructor
+public class BlockWord {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    private String word;
+
+    public BlockWord(String word) {
+        this.word = word;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BlockWord)) return false;
+        BlockWord blockWord = (BlockWord) o;
+        return Objects.equals(getWord(), blockWord.getWord());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getWord());
+    }
+}
