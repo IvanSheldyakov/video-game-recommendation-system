@@ -5,8 +5,6 @@ import org.jsoup.Jsoup;
 import org.springframework.beans.factory.BeanFactory;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 public class PageParser {
@@ -19,9 +17,9 @@ public class PageParser {
 
     public PageParser(int page, BeanFactory beanFactory) {
         if (page == 0) {
-            pageUrl = Constants.zeroPage;
+            pageUrl = Constants.ZERO_PAGE;
         } else {
-            pageUrl = Constants.toPage + page;
+            pageUrl = Constants.TO_PAGE + page;
         }
         this.beanFactory = beanFactory;
     }
@@ -35,7 +33,7 @@ public class PageParser {
 
             var gameHandlers = elements.stream()
                     .map(elem -> elem.attr("href"))
-                    .map(gameUrl -> beanFactory.getBean(GameHandler.class, Constants.mainUrl + gameUrl)).toList();
+                    .map(gameUrl -> beanFactory.getBean(GameHandler.class, Constants.MAIN_URL + gameUrl)).toList();
             for (GameHandler handler : gameHandlers) {
                 handler.run();
                 handler.join();

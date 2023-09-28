@@ -4,7 +4,6 @@ import com.example.demo.utils.Constants;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.SimpleTokenizer;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,9 +28,9 @@ public class WordsFinder {
         String[] tags = posTagger.tag(tokens);
 
         HashMap<String, List<String>> map = new HashMap<>();
-        map.put(Constants.adjective, new ArrayList<>());
-        map.put(Constants.noun, new ArrayList<>());
-        map.put(Constants.nouns, new ArrayList<>());
+        map.put(Constants.ADJECTIVE, new ArrayList<>());
+        map.put(Constants.NOUN, new ArrayList<>());
+        map.put(Constants.NOUNS, new ArrayList<>());
 
         for (int i = 0; i < tags.length; i++) {
             String tag = tags[i];

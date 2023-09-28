@@ -1,6 +1,6 @@
 package com.example.demo.utils;
 
-public class MonthConverter {
+public final class MonthConverter {
     public static int convert(String month) {
         return switch (month) {
             case "Jan" -> 1;
@@ -17,5 +17,8 @@ public class MonthConverter {
             case "Dec" -> 12;
             default -> throw new RuntimeException();
         };
+    }
+
+    private MonthConverter() {
     }
 }

@@ -39,7 +39,7 @@ public class GameHandler extends Thread {
     public void run() {
         try {
             StringBuilder text = new StringBuilder();
-            var doc = Jsoup.connect(gameUrl + Constants.toCriticReviews).get();
+            var doc = Jsoup.connect(gameUrl + Constants.TO_CRITIC_REVIEWS).get();
             var elements = doc.body().select("div.review_body");
             for (var elem : elements) {
                 text.append(elem.text()).append(" ");
