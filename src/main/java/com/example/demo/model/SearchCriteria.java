@@ -3,6 +3,7 @@ package com.example.demo.model;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class SearchCriteria {
@@ -12,4 +13,5 @@ public class SearchCriteria {
     private String publisher;
     private LocalDate releaseStartDate;
     private LocalDate releaseEndDate;
+    private List<String> customValues;
 }

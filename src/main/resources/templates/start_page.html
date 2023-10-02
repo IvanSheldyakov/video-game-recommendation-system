@@ -14,10 +14,13 @@
 
 <div class="container mt-5">
     <form th:action="@{/submit}" th:object="${searchCriteria}" method="post">
-        <div class="row">
-            <div class="col-md-12">
-                <h3>Платформа</h3>
-                <div class="input-group mb-3">
+        <h2 class="mb-4">Рекомендательная система компьютерных игр</h2>
+
+        <!-- Платформа -->
+        <div class="form-group row">
+            <label for="platform-input" class="col-sm-2 col-form-label">Платформа</label>
+            <div class="col-sm-10">
+                <div class="input-group">
                     <input type="text" id="platform-input" th:field="*{platform}" class="form-control" placeholder="Поиск" aria-describedby="button-addon2" data-toggle="dropdown">
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="button-addon2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Выберите</button>
@@ -29,10 +32,14 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Блок "Жанр" -->
-                <h3>Жанр</h3>
-                <div class="input-group mb-3">
+        <!-- Жанр -->
+        <div class="form-group row">
+            <label for="genre-input" class="col-sm-2 col-form-label">Жанр</label>
+            <div class="col-sm-10">
+                <div class="input-group">
                     <input type="text" id="genre-input" th:field="*{genre}" class="form-control" placeholder="Поиск" aria-describedby="button-addon3" data-toggle="dropdown">
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="button-addon3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Выберите</button>
@@ -44,10 +51,14 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Блок "Издатель" -->
-                <h3>Издатель</h3>
-                <div class="input-group mb-3">
+        <!-- Издатель -->
+        <div class="form-group row">
+            <label for="publisher-input" class="col-sm-2 col-form-label">Издатель</label>
+            <div class="col-sm-10">
+                <div class="input-group">
                     <input type="text" id="publisher-input" th:field="*{publisher}" class="form-control" placeholder="Поиск" aria-describedby="button-addon4" data-toggle="dropdown">
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="button-addon4" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Выберите</button>
@@ -59,19 +70,58 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Блок "Дата выпуска" -->
-                <h3>Дата выпуска</h3>
-                <div class="input-group mb-3">
-                    <input type="date" id="release-start-date" th:field="*{releaseStartDate}" class="form-control" placeholder="Начало" aria-label="Начало">
-                    <input type="date" id="release-end-date" th:field="*{releaseEndDate}" class="form-control" placeholder="Конец" aria-label="Конец">
+        <!-- Дата выпуска -->
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Дата выпуска</label>
+            <div class="col-sm-5">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Начало</span>
+                    </div>
+                    <input type="date" id="release-start-date" th:field="*{releaseStartDate}" class="form-control" aria-label="Начало">
                 </div>
-
-                <h3>Минимальная граница оценки</h3>
-                <div class="input-group mb-3">
-                    <input type="number" th:field="*{minScore}" class="form-control" min="1" max="100" placeholder="Введите число от 1 до 100">
+            </div>
+            <div class="col-sm-5">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Конец</span>
+                    </div>
+                    <input type="date" id="release-end-date" th:field="*{releaseEndDate}" class="form-control" aria-label="Конец">
                 </div>
+            </div>
+        </div>
 
+        <!-- Минимальная граница оценки -->
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Минимальная граница оценки</label>
+            <div class="col-sm-10">
+                <input type="number" th:field="*{minScore}" class="form-control" min="1" max="100" placeholder="Введите число от 1 до 100">
+            </div>
+        </div>
+
+        <!-- Блоки CustomBlock -->
+        <th:block th:each="block, iterStat : ${customBlocks}">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" th:text="${block.title}"></label>
+                <div class="col-sm-8">
+                    <div class="input-group">
+                        <input type="range" min="1" max="10" value="1" class="form-control-range" th:id="'customRange' + ${iterStat.index}" th:field="*{customValues[__${iterStat.index}__]}">
+                        <input type="number" class="form-control ml-2" th:id="'customValueDisplay' + ${iterStat.index}" readonly>
+                    </div>
+                    <a href="#" data-toggle="collapse" th:data-target="'#customDescription' + ${iterStat.index}">Раскрыть</a>
+                    <div th:id="'customDescription' + ${iterStat.index}" class="collapse mt-2">
+                        <p th:text="${block.description}"></p>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+
+        <!-- Кнопка отправки -->
+        <div class="form-group row">
+            <div class="col-sm-10 offset-sm-2">
                 <button type="submit" class="btn btn-primary">Результат</button>
             </div>
         </div>
@@ -117,6 +167,21 @@
         // Для "Жанр"
         $("#genre-dropdown .dropdown-item").click(function() {
             $("#genre-input").val($(this).text());
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Отображение значения каждого ползунка
+        $("[id^=customRange]").on("input", function() {
+            var index = $(this).attr('id').replace('customRange', '');
+            $("#customValueDisplay" + index).val($(this).val());
+        });
+        // Инициализация начальных значений
+        $("[id^=customRange]").each(function() {
+            var index = $(this).attr('id').replace('customRange', '');
+            $("#customValueDisplay" + index).val($(this).val());
         });
     });
 </script>

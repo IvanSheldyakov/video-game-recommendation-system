@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.model.CustomBlock;
 import com.example.demo.model.SearchCriteria;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +25,9 @@ public class RecommendationSystemController {
         model.addAttribute("genres", genres);
         model.addAttribute("publishers", publishers);
         model.addAttribute("searchCriteria", new SearchCriteria());
+        model.addAttribute("customBlocks", List.of(
+                new CustomBlock("1","Название блока1", "Описание блока"),
+                new CustomBlock("2","Название блока2", "Описание блока")));
         return "start_page";
     }
 
