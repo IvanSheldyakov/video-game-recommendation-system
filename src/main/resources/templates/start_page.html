@@ -4,37 +4,122 @@
     <meta charset=utf-8>
     <title>Рекомендательная система компьютерных игр</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 </head>
 <body>
 
 <div class="container mt-5">
-    <div class="row">
-        <div class="col-md-12">
-            <h3>Платформа</h3>
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Поиск" aria-label="Поиск" aria-describedby="button-addon2" data-toggle="dropdown">
-                <div class="input-group-append">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="button-addon2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Выберите</button>
-                    <div class="dropdown-menu" aria-labelledby="button-addon2">
-                        <!-- Варианты ответа из списка -->
-                        <th:block th:each="option : ${options}">
-                            <a class="dropdown-item" th:text="${option}" th:href="'#' + ${option}"></a>
-                        </th:block>
+    <form th:action="@{/submit}" th:object="${searchCriteria}" method="post">
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Платформа</h3>
+                <div class="input-group mb-3">
+                    <input type="text" id="platform-input" th:field="*{platform}" class="form-control" placeholder="Поиск" aria-describedby="button-addon2" data-toggle="dropdown">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="button-addon2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Выберите</button>
+                        <div class="dropdown-menu" id="platform-dropdown" aria-labelledby="button-addon2">
+                            <!-- Варианты ответа из списка -->
+                            <th:block th:each="option : ${platforms}">
+                                <a class="dropdown-item" th:text="${option}" th:href="'#' + ${option}"></a>
+                            </th:block>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Добавленная строка -->
-            <h3>Минимальная граница оценки</h3>
-            <div class="input-group mb-3">
-                <input type="number" class="form-control" min="1" max="100" placeholder="Введите число от 1 до 100">
+                <!-- Блок "Жанр" -->
+                <h3>Жанр</h3>
+                <div class="input-group mb-3">
+                    <input type="text" id="genre-input" th:field="*{genre}" class="form-control" placeholder="Поиск" aria-describedby="button-addon3" data-toggle="dropdown">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="button-addon3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Выберите</button>
+                        <div class="dropdown-menu" id="genre-dropdown" aria-labelledby="button-addon3">
+                            <!-- Варианты ответа из списка жанров -->
+                            <th:block th:each="option : ${genres}">
+                                <a class="dropdown-item" th:text="${option}" th:href="'#' + ${option}"></a>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок "Издатель" -->
+                <h3>Издатель</h3>
+                <div class="input-group mb-3">
+                    <input type="text" id="publisher-input" th:field="*{publisher}" class="form-control" placeholder="Поиск" aria-describedby="button-addon4" data-toggle="dropdown">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="button-addon4" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Выберите</button>
+                        <div class="dropdown-menu" id="publisher-dropdown" aria-labelledby="button-addon4">
+                            <!-- Варианты ответа из списка издателей -->
+                            <th:block th:each="option : ${publishers}">
+                                <a class="dropdown-item" th:text="${option}" th:href="'#' + ${option}"></a>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок "Дата выпуска" -->
+                <h3>Дата выпуска</h3>
+                <div class="input-group mb-3">
+                    <input type="date" id="release-start-date" th:field="*{releaseStartDate}" class="form-control" placeholder="Начало" aria-label="Начало">
+                    <input type="date" id="release-end-date" th:field="*{releaseEndDate}" class="form-control" placeholder="Конец" aria-label="Конец">
+                </div>
+
+                <h3>Минимальная граница оценки</h3>
+                <div class="input-group mb-3">
+                    <input type="number" th:field="*{minScore}" class="form-control" min="1" max="100" placeholder="Введите число от 1 до 100">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Результат</button>
             </div>
         </div>
-    </div>
+    </form>
 </div>
+
+<script>
+    $(document).ready(function() {
+        // Функция фильтрации элементов выпадающего списка
+        function filterDropdown(inputId, dropdownId) {
+            var input = $(inputId);
+            var dropdown = $(dropdownId);
+            var filter = input.val().toUpperCase();
+            dropdown.find('.dropdown-item').each(function() {
+                var item = $(this);
+                if (item.text().toUpperCase().indexOf(filter) > -1) {
+                    item.show();
+                } else {
+                    item.hide();
+                }
+            });
+        }
+
+        // Обработчик ввода для "Издатель"
+        $("#publisher-input").on('input', function() {
+            filterDropdown("#publisher-input", "#publisher-dropdown");
+        });
+
+        // Обработчик клика для элементов выпадающего списка "Издатель"
+        $("#publisher-dropdown .dropdown-item").click(function() {
+            $("#publisher-input").val($(this).text());
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Для "Платформа"
+        $("#platform-dropdown .dropdown-item").click(function() {
+            $("#platform-input").val($(this).text());
+        });
+
+        // Для "Жанр"
+        $("#genre-dropdown .dropdown-item").click(function() {
+            $("#genre-input").val($(this).text());
+        });
+    });
+</script>
 
 </body>
 </html>
