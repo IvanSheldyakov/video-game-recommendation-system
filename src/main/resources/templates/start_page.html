@@ -9,6 +9,7 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 
@@ -103,21 +104,24 @@
         </div>
 
         <!-- Блоки CustomBlock -->
-        <th:block th:each="block, iterStat : ${customBlocks}">
-            <div class="form-group row">
-                <label class="col-sm-2 col-form-label" th:text="${block.title}"></label>
-                <div class="col-sm-8">
-                    <div class="input-group">
-                        <input type="range" min="1" max="10" value="1" class="form-control-range" th:id="'customRange' + ${iterStat.index}" th:field="*{customValues[__${iterStat.index}__]}">
-                        <input type="number" class="form-control ml-2" th:id="'customValueDisplay' + ${iterStat.index}" readonly>
-                    </div>
-                    <a href="#" data-toggle="collapse" th:data-target="'#customDescription' + ${iterStat.index}">Раскрыть</a>
-                    <div th:id="'customDescription' + ${iterStat.index}" class="collapse mt-2">
-                        <p th:text="${block.description}"></p>
+        <div class="row">
+            <th:block th:each="block, iterStat : ${customBlocks}">
+                <div class="col-md-3 mb-4">
+                    <div class="card" th:classappend="${colors[iterStat.index % colors.length]}">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${block.title}"></h5>
+                            <input type="range" min="1" max="10" value="1" class="form-control-range mb-2" th:id="'customRange' + ${iterStat.index}" th:field="*{customValues[__${iterStat.index}__]}">
+                            <input type="number" class="form-control" th:id="'customValueDisplay' + ${iterStat.index}" readonly>
+                            <a href="#" data-toggle="collapse" th:data-target="'#customDescription' + ${iterStat.index}" class="d-block mt-2">Раскрыть</a>
+                            <div th:id="'customDescription' + ${iterStat.index}" class="collapse mt-2">
+                                <p th:text="${block.description}"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </th:block>
+            </th:block>
+        </div>
+
 
         <!-- Кнопка отправки -->
         <div class="form-group row">
