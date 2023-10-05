@@ -1,0 +1,14 @@
+#!/bin/sh
+
+FILES=$(git diff --cached --name-only --diff-filter=ACM "*.java")
+[ -z "$FILES" ] && exit 0
+
+# Форматирование всех выбранных файлов
+echo "Auto-formatting..."
+mvn fmt:format
+
+# Добавление отформатированных файлов обратно в staging
+echo "Adding files to git..."
+git add $FILES
+
+exit 0
