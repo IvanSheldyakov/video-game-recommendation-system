@@ -7,7 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class GameTypeBlock {
 
-    private String id;
-    private String title;
-    private String description;
+  private String id;
+  private String title;
+  private String description;
 }

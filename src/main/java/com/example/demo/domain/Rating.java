@@ -1,11 +1,10 @@
 package com.example.demo.domain;
 
+import java.util.List;
+import javax.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Table(name = "rating")
@@ -14,16 +13,16 @@ import java.util.List;
 @NoArgsConstructor
 public class Rating {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
 
-    private String rating;
+  private String rating;
 
-    @OneToMany(mappedBy = "rating")
-    private List<Game> games;
+  @OneToMany(mappedBy = "rating")
+  private List<Game> games;
 
-    public Rating(String rating) {
-        this.rating = rating;
-    }
+  public Rating(String rating) {
+    this.rating = rating;
+  }
 }

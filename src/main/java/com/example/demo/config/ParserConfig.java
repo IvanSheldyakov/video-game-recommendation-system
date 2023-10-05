@@ -15,35 +15,34 @@ import org.springframework.context.annotation.Scope;
 @RequiredArgsConstructor
 public class ParserConfig {
 
-    private final GameRepository gameRepository;
-    private final TypeRepository typeRepository;
-    private final WordRepository wordRepository;
-    private final WordCountRepository wordCountRepository;
-    private final GenreRepository genreRepository;
-    private final PlatformRepository platformRepository;
-    private final PublisherRepository publisherRepository;
-    private final RatingRepository ratingRepository;
-    private final BeanFactory beanFactory;
+  private final GameRepository gameRepository;
+  private final TypeRepository typeRepository;
+  private final WordRepository wordRepository;
+  private final WordCountRepository wordCountRepository;
+  private final GenreRepository genreRepository;
+  private final PlatformRepository platformRepository;
+  private final PublisherRepository publisherRepository;
+  private final RatingRepository ratingRepository;
+  private final BeanFactory beanFactory;
 
-    @Bean
-    @Scope(scopeName = "prototype")
-    public GameHandler gameHandler(String url) {
-        return new GameHandler(
-                url,
-                gameRepository,
-                typeRepository,
-                wordRepository,
-                wordCountRepository,
-                genreRepository,
-                platformRepository,
-                publisherRepository,
-                ratingRepository
-        );
-    }
+  @Bean
+  @Scope(scopeName = "prototype")
+  public GameHandler gameHandler(String url) {
+    return new GameHandler(
+        url,
+        gameRepository,
+        typeRepository,
+        wordRepository,
+        wordCountRepository,
+        genreRepository,
+        platformRepository,
+        publisherRepository,
+        ratingRepository);
+  }
 
-    @Bean
-    @Scope(scopeName = "prototype")
-    public PageParser pageParser(int page) {
-        return new PageParser(page, beanFactory);
-    }
+  @Bean
+  @Scope(scopeName = "prototype")
+  public PageParser pageParser(int page) {
+    return new PageParser(page, beanFactory);
+  }
 }

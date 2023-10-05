@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GameRepository extends JpaRepository<Game, Integer> {
 
-    Game save(Game game);
-
+  Game save(Game game);
 }
