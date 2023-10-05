@@ -12,16 +12,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ParserController {
 
-    private final Parser parser;
-    private final KeywordsService keywordsService;
+  private final Parser parser;
+  private final KeywordsService keywordsService;
 
-    @GetMapping("/start")
-    public void start() {
-        parser.parse();
-    }
+  @GetMapping("/start")
+  public void start() {
+    parser.parse();
+  }
 
-    @GetMapping("/update")
-    public void update() {
-        keywordsService.update();
-    }
+  @GetMapping("/update")
+  public void update() {
+    keywordsService.update();
+  }
 }
