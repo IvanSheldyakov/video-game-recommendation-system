@@ -61,7 +61,8 @@ public class GameHandler extends Thread {
     for (var elem : elements) {
       text.append(elem.text()).append(" ");
     }
-    getIgnReview(criticReviewsDoc, text); // TODO
+
+    getIgnReview(criticReviewsDoc, text);
   }
 
   private Document getCriticReviewsDoc() {
@@ -75,28 +76,34 @@ public class GameHandler extends Thread {
     Document gameDoc = Jsoup.parse(webDriver.getPageSource());
 
     String gameName = getGameName(gameDoc);
+    System.out.println(gameName);
     Integer score = getScore(gameDoc);
+    System.out.println(score);
     String date = getDate(gameDoc);
-
-    String trailerUrl = null;
+    System.out.println(date);
 
     Rating rating = getRating(gameDoc);
+    System.out.println(rating);
     Set<Genre> genres = getGenres(gameDoc);
-    trailerUrl = getTrailerUrl(gameDoc);
+    System.out.println(genres);
+    Set<Platform> platforms = getPlatform(gameDoc);
+    System.out.println(platforms);
+    Publisher publisher = getPublisher(gameDoc);
+    System.out.println(publisher);
 
     Document gameDetails = Jsoup.connect(gameUrl + Constants.TO_DETAILS).get();
     String summary = getSummary(gameDetails);
+    System.out.println(summary);
 
     Game game = new Game();
     game.setName(gameName);
-    game.getPlatforms().add(getPlatform(gameDoc));
+    game.getPlatforms().addAll(platforms);
     game.getGenres().addAll(genres);
     game.setScore(score);
     game.setReleaseDate(getReleaseDate(date));
-    game.setPublisher(getPublisher(gameDoc));
+    game.setPublisher(publisher);
     game.setRating(rating);
     game.setSummary(summary);
-    game.setTrailerLink(trailerUrl);
     return game;
   }
 
@@ -134,10 +141,17 @@ public class GameHandler extends Thread {
         .trim();
   }
 
-  private Platform getPlatform(Document doc) {
-    String platform =
-        doc.body().select("div.product_title").get(0).select("span.platform").get(0).text().trim();
-    return platformRepository.findByPlatform(platform).orElse(new Platform(platform));
+  private Set<Platform> getPlatform(Document doc) {
+    var platforms =
+        doc.body()
+            .select(
+                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-gameDetails")
+            .select("div.c-gameDetails_Platforms.u-flexbox.u-flexbox-row")
+            .select("li.c-gameDetails_listItem");
+    return platforms.stream()
+        .map(Element::text)
+        .map(platform -> platformRepository.findByPlatform(platform).orElse(new Platform(platform)))
+        .collect(Collectors.toSet());
   }
 
   private String getTrailerUrl(Document doc) {
@@ -151,7 +165,12 @@ public class GameHandler extends Thread {
 
   private Publisher getPublisher(Document doc) {
     String publisher =
-        doc.body().select("div.product_data").get(0).select("span.data").get(0).text().trim();
+        doc.body()
+            .select(
+                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-gameDetails")
+            .select(
+                "div.c-gameDetails_Distributor.u-flexbox.u-flexbox-row > span.g-outer-spacing-left-medium-fluid.g-color-gray70.u-block")
+            .text();
     return publisherRepository.findByPublisher(publisher).orElse(new Publisher(publisher));
   }
 
@@ -179,14 +198,17 @@ public class GameHandler extends Thread {
     return Set.of(genreRepository.findByGenre(genre).orElse(new Genre(genre)));
   }
 
-  private String getSummary(Document doc) {
+  private String getSummary(Document doc) { // TODO
     String description =
         doc.body()
             .select(
                 "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-productionDetailsGame-summary.g-outer-spacing-bottom-small.g-container-rounded-small > p > span.c-productionDetailsGame_description.g-text-xsmall")
             .text()
             .trim();
-    return description.substring("Description: ".length());
+    if (description.isEmpty()) {
+      return null;
+    }
+    return description.substring("Description: ".length(), description.length());
   }
 
   private LocalDate getReleaseDate(String date) {
@@ -259,7 +281,13 @@ public class GameHandler extends Thread {
 
   private void getIgnReview(Document doc, StringBuilder text) {
     Set<String> urls =
-        doc.body().select("a.external").stream()
+        doc
+            .body()
+            .select(
+                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductReviews-wrapper > div.c-pageProductReviews.u-grid.g-grid-container.g-outer-spacing-bottom-xxlarge > section > div.c-pageProductReviews_row.g-outer-spacing-bottom-xxlarge")
+            .select(
+                "div.c-siteReview_extra.u-grid.u-grid-gap-medium.g-inner-spacing-medium.o-border-thin-top.g-border-gray30 > a")
+            .stream()
             .map(elem -> elem.attr("href"))
             .filter(url -> url.contains("ign") && url.contains("articles"))
             .collect(Collectors.toSet());
