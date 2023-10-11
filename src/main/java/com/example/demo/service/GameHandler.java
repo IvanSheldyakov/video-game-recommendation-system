@@ -12,13 +12,14 @@ import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import org.openqa.selenium.WebDriver;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 public class GameHandler extends Thread {
 
   private final String gameUrl;
+  private final WebDriver webDriver;
   private final GameRepository gameRepository;
   private final TypeRepository typeRepository;
   private final WordRepository wordRepository;
@@ -35,16 +36,11 @@ public class GameHandler extends Thread {
   @Transactional
   public void run() {
     try {
-      StringBuilder text = new StringBuilder();
-      var doc = Jsoup.connect(gameUrl + Constants.TO_CRITIC_REVIEWS).get();
-      var elements = doc.body().select("div.review_body");
-      for (var elem : elements) {
-        text.append(elem.text()).append(" ");
-      }
-      getIgnReview(doc, text);
-      var map = wordsFinder.find(text.toString());
+      StringBuilder gameDescription = new StringBuilder();
+      fillGameTextDescription(gameDescription);
+      var map = wordsFinder.find(gameDescription.toString());
 
-      Game game = gameRepository.save(fillGameInfo(doc));
+      Game game = gameRepository.save(fillGameInfo());
 
       analyzeTypeOfGame(map, game);
       System.out.println(game);
@@ -54,38 +50,88 @@ public class GameHandler extends Thread {
     }
   }
 
-  private Game fillGameInfo(Document doc) {
-    String gameName =
-        doc.body().select("div.product_title").get(0).select("a.hover_none").get(0).text().trim();
+  private void fillGameTextDescription(StringBuilder text) throws IOException {
+    Document criticReviewsDoc = getCriticReviewsDoc();
+    var elements =
+        criticReviewsDoc
+            .body()
+            .select("div.c-pageProductReviews_row")
+            .select("div.c-siteReview_quote");
 
-    Integer score = Integer.parseInt(doc.body().select("a.metascore_anchor").get(0).text().trim());
-    String date =
-        doc.body().select("div.product_data").get(0).select("span.data").get(1).text().trim();
-
-    Rating rating = null;
-    String summary = null;
-    String trailerUrl = null;
-    Set<Genre> genres = new HashSet<>();
-    try {
-      var gameDoc = Jsoup.connect(gameUrl).get();
-      rating = getRating(gameDoc);
-      summary = getSummary(gameDoc);
-      genres = getGenres(gameDoc);
-      trailerUrl = getTrailerUrl(gameDoc);
-    } catch (IOException ignored) {
+    for (var elem : elements) {
+      text.append(elem.text()).append(" ");
     }
+    getIgnReview(criticReviewsDoc, text); // TODO
+  }
+
+  private Document getCriticReviewsDoc() {
+    webDriver.get(gameUrl + Constants.TO_CRITIC_REVIEWS);
+    String pageSource = webDriver.getPageSource();
+    return Jsoup.parse(pageSource);
+  }
+
+  private Game fillGameInfo() throws IOException {
+    webDriver.get(gameUrl);
+    Document gameDoc = Jsoup.parse(webDriver.getPageSource());
+
+    String gameName = getGameName(gameDoc);
+    Integer score = getScore(gameDoc);
+    String date = getDate(gameDoc);
+
+    String trailerUrl = null;
+
+    Rating rating = getRating(gameDoc);
+    Set<Genre> genres = getGenres(gameDoc);
+    trailerUrl = getTrailerUrl(gameDoc);
+
+    Document gameDetails = Jsoup.connect(gameUrl + Constants.TO_DETAILS).get();
+    String summary = getSummary(gameDetails);
 
     Game game = new Game();
     game.setName(gameName);
-    game.getPlatforms().add(getPlatform(doc));
+    game.getPlatforms().add(getPlatform(gameDoc));
     game.getGenres().addAll(genres);
     game.setScore(score);
     game.setReleaseDate(getReleaseDate(date));
-    game.setPublisher(getPublisher(doc));
+    game.setPublisher(getPublisher(gameDoc));
     game.setRating(rating);
     game.setSummary(summary);
     game.setTrailerLink(trailerUrl);
     return game;
+  }
+
+  private String getDate(Document gameDoc) {
+    return gameDoc
+        .body()
+        .select("#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame")
+        .select(
+            "div.c-productHero_player-scoreInfo.u-grid.g-grid-container > div.c-productHero_score-container.u-flexbox.u-flexbox-column.g-bg-white > div.g-text-xsmall > span.u-text-uppercase")
+        .get(0)
+        .text()
+        .trim();
+  }
+
+  private Integer getScore(Document gameDoc) {
+    return Integer.parseInt(
+        gameDoc
+            .body()
+            .select("#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame")
+            .select(
+                "div.c-productHero_player-scoreInfo.u-grid.g-grid-container > div.c-productHero_score-container.u-flexbox.u-flexbox-column.g-bg-white > div.c-productHero_scoreInfo.g-inner-spacing-top-medium.g-outer-spacing-bottom-medium.g-outer-spacing-top-medium > div:nth-child(1) > div > div.c-productScoreInfo_scoreContent.u-flexbox.u-flexbox-alignCenter.u-flexbox-justifyFlexEnd.g-width-100.u-flexbox-nowrap > div.c-productScoreInfo_scoreNumber.u-float-right > div > div > span")
+            .get(0)
+            .text()
+            .trim());
+  }
+
+  private String getGameName(Document gameDoc) {
+    return gameDoc
+        .body()
+        .select("#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame")
+        .select(
+            "div.c-productHero_player-scoreInfo.u-grid.g-grid-container > div.c-productHero_score-container.u-flexbox.u-flexbox-column.g-bg-white > div.c-productHero_title.g-inner-spacing-bottom-medium.g-outer-spacing-top-medium > div")
+        .get(0)
+        .text()
+        .trim();
   }
 
   private Platform getPlatform(Document doc) {
@@ -112,40 +158,35 @@ public class GameHandler extends Thread {
   private Rating getRating(Document doc) {
     var el =
         doc.body()
-            .select("ul.summary_details")
-            .select("li.summary_detail.product_rating")
-            .select("span.data");
+            .select(
+                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-productionDetailsGame-summary.g-outer-spacing-bottom-small.g-container-rounded-small > div > div > div.c-productionDetailsGame_esrb_title.u-inline-block.g-outer-spacing-left-medium-fluid");
 
     if (el.size() < 1) {
       return null;
     } else {
-      String rating = el.get(0).text().trim();
+      String rating = el.text().trim();
       return ratingRepository.findByRating(rating).orElse(new Rating(rating));
     }
   }
 
   private Set<Genre> getGenres(Document doc) {
-    Elements elements =
+    String genre =
         doc.body()
-            .select("div.summary_wrap")
-            .select("div.section.product_details")
-            .select("div.details.side_details")
-            .select("li.summary_detail.product_genre")
-            .select("span.data");
-    return elements.stream()
-        .map(Element::text)
-        .map(genreName -> genreRepository.findByGenre(genreName).orElse(new Genre(genreName)))
-        .collect(Collectors.toSet());
+            .select(
+                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-gameDetails > div.c-gameDetails_sectionContainer.u-flexbox.u-flexbox-row.u-flexbox-alignBaseline > ul > li > div > a > span")
+            .text()
+            .trim();
+    return Set.of(genreRepository.findByGenre(genre).orElse(new Genre(genre)));
   }
 
   private String getSummary(Document doc) {
-    return doc.body()
-        .select("div.summary_wrap")
-        .select("div.section.product_details")
-        .select("div.details.main_details")
-        .select("span.blurb.blurb_collapsed")
-        .text()
-        .trim();
+    String description =
+        doc.body()
+            .select(
+                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-productionDetailsGame-summary.g-outer-spacing-bottom-small.g-container-rounded-small > p > span.c-productionDetailsGame_description.g-text-xsmall")
+            .text()
+            .trim();
+    return description.substring("Description: ".length());
   }
 
   private LocalDate getReleaseDate(String date) {

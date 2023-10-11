@@ -2,7 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.SearchCriteria;
 import com.example.demo.service.GameInfoService;
-import java.util.Arrays;
+import com.example.demo.utils.Constants;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -20,16 +20,11 @@ public class RecommendationSystemController {
 
   @GetMapping("/start")
   public String showPlatform(Model model) {
-    List<String> platforms = Arrays.asList("Вариант 1", "Вариант 2", "Вариант 3");
-    List<String> genres = Arrays.asList("Жанр 1", "Жанр 2", "Жанр 3");
-    List<String> publishers = Arrays.asList("Sony", "Your MOM");
-    String[] colors = {
-      "bg-pastel1", "bg-pastel2", "bg-pastel3", "bg-pastel4",
-      "bg-pastel5", "bg-pastel6", "bg-pastel7", "bg-pastel8",
-      "bg-pastel9", "bg-pastel10", "bg-pastel11", "bg-pastel12",
-      "bg-pastel13", "bg-pastel14", "bg-pastel15", "bg-pastel16"
-    };
-    model.addAttribute("colors", colors);
+    List<String> platforms = gameInfoService.getPlatforms();
+    List<String> genres = gameInfoService.getGenres();
+    List<String> publishers = gameInfoService.getPublishers();
+
+    model.addAttribute("colors", Constants.colors);
     model.addAttribute("platforms", platforms);
     model.addAttribute("genres", genres);
     model.addAttribute("publishers", publishers);

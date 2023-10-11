@@ -4,6 +4,7 @@ import com.example.demo.repository.*;
 import com.example.demo.service.GameHandler;
 import com.example.demo.service.PageParser;
 import lombok.RequiredArgsConstructor;
+import org.openqa.selenium.WebDriver;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -27,9 +28,10 @@ public class ParserConfig {
 
   @Bean
   @Scope(scopeName = "prototype")
-  public GameHandler gameHandler(String url) {
+  public GameHandler gameHandler(String url, WebDriver driver) {
     return new GameHandler(
         url,
+        driver,
         gameRepository,
         typeRepository,
         wordRepository,
@@ -42,7 +44,7 @@ public class ParserConfig {
 
   @Bean
   @Scope(scopeName = "prototype")
-  public PageParser pageParser(int page) {
-    return new PageParser(page, beanFactory);
+  public PageParser pageParser(int page, WebDriver webDriver) {
+    return new PageParser(page, beanFactory, webDriver);
   }
 }
