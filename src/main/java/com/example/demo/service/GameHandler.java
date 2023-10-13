@@ -76,20 +76,18 @@ public class GameHandler extends Thread {
     Document gameDoc = Jsoup.parse(webDriver.getPageSource());
 
     String gameName = getGameName(gameDoc);
-    System.out.println(gameName);
+
     Integer score = getScore(gameDoc);
-    System.out.println(score);
+
     String date = getDate(gameDoc);
-    System.out.println(date);
 
     Rating rating = getRating(gameDoc);
-    System.out.println(rating);
+
     Set<Genre> genres = getGenres(gameDoc);
-    System.out.println(genres);
+
     Set<Platform> platforms = getPlatform(gameDoc);
-    System.out.println(platforms);
+
     Publisher publisher = getPublisher(gameDoc);
-    System.out.println(publisher);
 
     Document gameDetails = Jsoup.connect(gameUrl + Constants.TO_DETAILS).get();
     String summary = getSummary(gameDetails);
@@ -198,17 +196,17 @@ public class GameHandler extends Thread {
     return Set.of(genreRepository.findByGenre(genre).orElse(new Genre(genre)));
   }
 
-  private String getSummary(Document doc) { // TODO
+  private String getSummary(Document doc) {
     String description =
         doc.body()
             .select(
-                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-productionDetailsGame-summary.g-outer-spacing-bottom-small.g-container-rounded-small > p > span.c-productionDetailsGame_description.g-text-xsmall")
+                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductDetails.g-grid-container.g-outer-spacing-bottom-xxlarge > div.c-pageProductDetails_description.g-outer-spacing-bottom-xlarge")
             .text()
             .trim();
-    if (description.isEmpty()) {
-      return null;
+    if (description.length() < 13) {
+      return "Нет";
     }
-    return description.substring("Description: ".length(), description.length());
+    return description.substring("Description: ".length());
   }
 
   private LocalDate getReleaseDate(String date) {

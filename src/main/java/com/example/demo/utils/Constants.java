@@ -3,8 +3,8 @@ package com.example.demo.utils;
 public final class Constants {
   public static final String TO_PAGE =
       "https://www.metacritic.com/browse/game/?releaseYearMin=1910&releaseYearMax=2023&page="; // 1
-                                                                                               // to
-                                                                                               // 6000
+  // to
+  // 6000
   public static final String TO_CRITIC_REVIEWS = "critic-reviews/";
   public static final String MAIN_URL = "https://www.metacritic.com";
   public static final String TO_DETAILS = "details/";
