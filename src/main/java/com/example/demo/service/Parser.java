@@ -23,7 +23,7 @@ public class Parser {
 
   public void parse() {
     try {
-      for (int i = 3; i <= 3; i++) { // 6000
+      for (int i = 1; i <= 5; i++) { // 6000
         PageParser parser = beanFactory.getBean(PageParser.class, i, webDriver);
         parser.parse();
         // keywordsService.update(); каждые 1000 игр
