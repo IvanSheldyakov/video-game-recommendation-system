@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import static com.example.demo.utils.VectorNormalizer.normalize;
+
 import com.example.demo.domain.*;
 import com.example.demo.repository.*;
 import com.example.demo.utils.Constants;
@@ -91,7 +93,6 @@ public class GameHandler extends Thread {
 
     Document gameDetails = Jsoup.connect(gameUrl + Constants.TO_DETAILS).get();
     String summary = getSummary(gameDetails);
-    System.out.println(summary);
 
     Game game = new Game();
     game.setName(gameName);
@@ -235,7 +236,7 @@ public class GameHandler extends Thread {
                 })
             .toList();
 
-    game.setVector(vector);
+    game.setVector(normalize(vector));
     Type type = getType(vector);
     game.setType(type);
     if (findNewKeywords) {

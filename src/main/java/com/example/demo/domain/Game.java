@@ -22,16 +22,13 @@ public class Game {
 
   private Integer score;
 
-  @Column(name = "trailer_link")
-  private String trailerLink;
-
   @Column(name = "release_date", columnDefinition = "DATE")
   private LocalDate releaseDate;
 
   @Column(name = "summary", columnDefinition = "text")
   private String summary;
 
-  @ElementCollection private List<Integer> vector;
+  @ElementCollection private List<Double> vector;
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name = "type_id")
