@@ -10,7 +10,11 @@ public class VectorNormalizer {
 
     List<Double> normalizedVector = new ArrayList<>();
     for (Integer value : vector) {
-      normalizedVector.add(value / norm);
+      if (norm == 0) {
+        normalizedVector.add(0.0);
+      } else {
+        normalizedVector.add(value / norm);
+      }
     }
     return normalizedVector;
   }

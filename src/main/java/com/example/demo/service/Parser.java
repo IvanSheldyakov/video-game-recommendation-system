@@ -1,9 +1,10 @@
 package com.example.demo.service;
 
+import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.edge.EdgeDriver;
-import org.openqa.selenium.edge.EdgeOptions;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +20,12 @@ public class Parser {
     this.beanFactory = beanFactory;
     this.keywordsService = keywordsService;
     this.webDriver = init();
+    webDriver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
   }
 
   public void parse() {
     try {
-      for (int i = 1; i <= 5; i++) { // 6000
+      for (int i = 1; i <= 10; i++) { // 6000
         PageParser parser = beanFactory.getBean(PageParser.class, i, webDriver);
         parser.parse();
         // keywordsService.update(); каждые 1000 игр
@@ -41,9 +43,10 @@ public class Parser {
   }
 
   private WebDriver init() {
-    System.setProperty("webdriver.edge.driver", "C:\\Users\\Public\\msedgedriver.exe");
-    EdgeOptions options = new EdgeOptions();
+    System.setProperty("webdriver.chrome.driver", "C:\\Users\\Public\\chromedriver.exe");
+    ChromeOptions options = new ChromeOptions();
     options.addArguments("--remote-allow-origins=*");
-    return new EdgeDriver(options);
+    ;
+    return new ChromeDriver(options);
   }
 }

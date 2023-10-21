@@ -57,17 +57,20 @@ public class GameHandler extends Thread {
     var elements =
         criticReviewsDoc
             .body()
-            .select("div.c-pageProductReviews_row")
-            .select("div.c-siteReview_quote");
+            .select(
+                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductReviews-wrapper > div.c-pageProductReviews.u-grid.g-grid-container.g-outer-spacing-bottom-xxlarge > section > div.c-pageProductReviews_row.g-outer-spacing-bottom-xxlarge")
+            .select("div.c-siteReview_main.g-inner-spacing-medium");
 
     for (var elem : elements) {
       text.append(elem.text()).append(" ");
     }
 
     getIgnReview(criticReviewsDoc, text);
+    getEurogamerReview(criticReviewsDoc, text);
   }
 
   private Document getCriticReviewsDoc() {
+
     webDriver.get(gameUrl + Constants.TO_CRITIC_REVIEWS);
     String pageSource = webDriver.getPageSource();
     return Jsoup.parse(pageSource);
@@ -296,6 +299,36 @@ public class GameHandler extends Thread {
           try {
             var newDoc = Jsoup.connect(url).get();
             var elems = newDoc.body().select("section.article-page");
+            if (elems.size() < 1) {
+              return;
+            }
+            text.append(elems.get(0).text());
+          } catch (IOException ignored) {
+          }
+        });
+  }
+
+  private void getEurogamerReview(Document doc, StringBuilder text) {
+    Set<String> urls =
+        doc
+            .body()
+            .select(
+                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductReviews-wrapper > div.c-pageProductReviews.u-grid.g-grid-container.g-outer-spacing-bottom-xxlarge > section > div.c-pageProductReviews_row.g-outer-spacing-bottom-xxlarge")
+            .select(
+                "div.c-siteReview_extra.u-grid.u-grid-gap-medium.g-inner-spacing-medium.o-border-thin-top.g-border-gray30 > a")
+            .stream()
+            .map(elem -> elem.attr("href"))
+            .filter(url -> url.contains("eurogamer.net"))
+            .collect(Collectors.toSet());
+
+    urls.forEach(
+        url -> {
+          try {
+            var newDoc = Jsoup.connect(url).get();
+            var elems =
+                newDoc
+                    .body()
+                    .select("#content_above > div.page_content > article > div > div > section");
             if (elems.size() < 1) {
               return;
             }

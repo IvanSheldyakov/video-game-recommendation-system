@@ -13,22 +13,14 @@ import opennlp.tools.tokenize.SimpleTokenizer;
 
 public class WordsFinder {
 
-  private final SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
-  private final POSTaggerME posTagger;
-
-  public WordsFinder() {
-    InputStream inputStreamPOSTagger = getClass().getResourceAsStream("/en-pos-maxent.bin");
-    POSModel posModel = null;
-    try {
-      posModel = new POSModel(inputStreamPOSTagger);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    this.posTagger = new POSTaggerME(posModel);
-  }
-
   public HashMap<String, List<String>> find(String text) throws IOException {
+    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String[] tokens = tokenizer.tokenize(text);
+
+    InputStream inputStreamPOSTagger = getClass().getResourceAsStream("/en-pos-maxent.bin");
+
+    POSModel posModel = new POSModel(inputStreamPOSTagger);
+    POSTaggerME posTagger = new POSTaggerME(posModel);
     String[] tags = posTagger.tag(tokens);
 
     HashMap<String, List<String>> map = new HashMap<>();
@@ -37,12 +29,13 @@ public class WordsFinder {
     map.put(Constants.NOUNS, new ArrayList<>());
 
     for (int i = 0; i < tags.length; i++) {
-      String token = tokens[i].toLowerCase(Locale.ROOT);
-      if (token.length() >= 3) {
-        List<String> list = map.get(tags[i]);
-        if (list != null) {
-          list.add(token);
+      String tag = tags[i];
+      if (map.containsKey(tag)) {
+        String token = tokens[i].toLowerCase(Locale.ROOT);
+        if (token.length() < 3) {
+          continue;
         }
+        map.get(tag).add(token);
       }
     }
     return map;
