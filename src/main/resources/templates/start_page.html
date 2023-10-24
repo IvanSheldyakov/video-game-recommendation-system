@@ -74,6 +74,25 @@
             </div>
         </div>
 
+        <!-- Возрастной рейтинг -->
+        <div class="form-group row">
+            <label for="rating-input" class="col-sm-2 col-form-label">Возрастной рейтинг</label>
+            <div class="col-sm-10">
+                <div class="input-group">
+                    <input type="text" id="rating-input" th:field="*{rating}" class="form-control" placeholder="Поиск" aria-describedby="button-addon5" data-toggle="dropdown">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="button-addon5" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Выберите</button>
+                        <div class="dropdown-menu" id="rating-dropdown" aria-labelledby="button-addon5">
+                            <!-- Варианты ответа из списка возрастных рейтингов -->
+                            <th:block th:each="option : ${ratings}">
+                                <a class="dropdown-item" th:text="${option}" th:href="'#' + ${option}"></a>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Дата выпуска -->
         <div class="form-group row">
             <label class="col-sm-2 col-form-label">Дата выпуска</label>
@@ -171,6 +190,10 @@
         // Для "Жанр"
         $("#genre-dropdown .dropdown-item").click(function() {
             $("#genre-input").val($(this).text());
+        });
+
+        $("#rating-dropdown .dropdown-item").click(function() {
+            $("#rating-input").val($(this).text());
         });
     });
 </script>

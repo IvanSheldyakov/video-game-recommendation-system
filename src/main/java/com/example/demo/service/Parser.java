@@ -1,9 +1,7 @@
 package com.example.demo.service;
 
-import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.stereotype.Component;
@@ -20,7 +18,7 @@ public class Parser {
     this.beanFactory = beanFactory;
     this.keywordsService = keywordsService;
     this.webDriver = init();
-    webDriver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+    // webDriver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
   }
 
   public void parse() {
@@ -46,7 +44,7 @@ public class Parser {
     System.setProperty("webdriver.chrome.driver", "C:\\Users\\Public\\chromedriver.exe");
     ChromeOptions options = new ChromeOptions();
     options.addArguments("--remote-allow-origins=*");
-    ;
-    return new ChromeDriver(options);
+
+    return null; // ChromeDriver(options);
   }
 }

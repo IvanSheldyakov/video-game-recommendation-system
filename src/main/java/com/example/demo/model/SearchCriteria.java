@@ -10,6 +10,7 @@ public class SearchCriteria {
   private Integer minScore;
   private String genre;
   private String publisher;
+  private String rating;
   private LocalDate releaseStartDate;
   private LocalDate releaseEndDate;
   private List<String> customValues;

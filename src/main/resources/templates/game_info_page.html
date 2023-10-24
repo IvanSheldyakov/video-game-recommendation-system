@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset=utf-8>
+    <title>Результат</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Информация о играх</h2>
+    <th:block th:each="game, iterStat : ${games}">
+        <div class="card mb-4">
+            <div class="card-body">
+                <!-- Оглавление блока -->
+                <h5 class="card-title font-weight-bold" th:text="|${iterStat.count}. ${game.name}|"></h5>
+                <div class="row">
+                    <!-- Левая часть блока с информацией -->
+                    <div class="col-md-4">
+                        <p class="card-text">
+                            <strong>Оценка:</strong> <span th:text="${game.score}"></span><br>
+                            <strong>Дата выпуска:</strong> <span th:text="${game.releaseDate}"></span><br>
+                            <strong>Возрастной рейтинг:</strong> <span th:text="${game.rating}"></span><br>
+                            <strong>Издатель:</strong> <span th:text="${game.publisher}"></span><br>
+                            <strong>Платформа:</strong> <span th:text="${game.platform}"></span><br>
+                            <strong>Жанр:</strong> <span th:text="${game.genre}"></span>
+                        </p>
+                    </div>
+                    <!-- Правая часть блока с summary -->
+                    <div class="col-md-8">
+                        <p th:text="${game.summary}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, totalPages-1)}"
+                        th:class="${pageNumber == currentPage} ? 'active' : ''">
+                        <a class="page-link" th:href="@{/results(page=${pageNumber})}" th:text="${pageNumber + 1}"></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

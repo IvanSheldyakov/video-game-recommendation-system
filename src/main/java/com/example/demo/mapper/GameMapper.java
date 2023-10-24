@@ -1,13 +1,16 @@
 package com.example.demo.mapper;
 
 import com.example.demo.domain.Game;
+import com.example.demo.domain.Genre;
+import com.example.demo.domain.Platform;
 import com.example.demo.model.GameInfo;
-import com.example.demo.model.SearchCriteria;
+import com.example.demo.utils.TextFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameMapper {
 
-  public static GameInfo toGameInfo(Game game, SearchCriteria criteria) {
+  public static GameInfo toGameInfo(Game game) {
     if (game == null) {
       return null;
     }
@@ -16,17 +19,22 @@ public class GameMapper {
     String name = game.getName();
     String score = game.getScore() != null ? game.getScore().toString() : null;
     String releaseDate = game.getReleaseDate() != null ? game.getReleaseDate().toString() : null;
-    String summary = game.getSummary();
+    String summary =
+        TextFormatter.removeTextInBracketsAfterDot(game.getSummary()); // TODO перенести
 
     String rating = game.getRating() != null ? game.getRating().getRating() : null;
-    String publisher = criteria.getPublisher();
+    String publisher = game.getPublisher() != null ? game.getPublisher().getPublisher() : null;
 
-    String platform = criteria.getPlatform();
-    String genre = criteria.getGenre();
+    String platform =
+        game.getPlatforms().stream()
+            .map(Platform::getPlatform)
+            .collect(Collectors.joining()); // TODO set?
+    String genres =
+        game.getGenres().stream().map(Genre::getGenre).collect(Collectors.joining(", "));
 
     List<Double> vector = game.getVector();
 
     return new GameInfo(
-        id, name, score, releaseDate, summary, rating, publisher, platform, genre, vector);
+        id, name, score, releaseDate, summary, rating, publisher, platform, genres, vector);
   }
 }
