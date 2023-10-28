@@ -3,7 +3,6 @@ package com.example.demo.repository;
 import com.example.demo.domain.Game;
 import com.example.demo.model.SearchCriteria;
 import java.util.List;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,39 +15,38 @@ public interface GameRepository extends JpaRepository<Game, Integer> {
   Game save(Game game);
 
   @Query(
-      """
-    select distinct g from Game g
-    join g.platforms pl
-    join g.genres ge
-    join g.publisher pub
-    join g.rating r
-    where
-    (:#{#criteria.platform} is null or :#{#criteria.platform} = '' or pl.platform = :#{#criteria.platform}) and
-    (:#{#criteria.minScore} is null or g.score >= :#{#criteria.minScore}) and
-    (:#{#criteria.genre} is null or :#{#criteria.genre} = '' or ge.genre = :#{#criteria.genre}) and
-    (:#{#criteria.publisher} is null or :#{#criteria.publisher} = '' or pub.publisher = :#{#criteria.publisher}) and
-    (:#{#criteria.rating} is null or :#{#criteria.rating} = '' or r.rating = :#{#criteria.rating}) and
-    (:#{#criteria.releaseStartDate} is null or g.releaseDate >= :#{#criteria.releaseStartDate}) and
-    (:#{#criteria.releaseEndDate} is null or g.releaseDate <= :#{#criteria.releaseEndDate})
-    """)
-  Page<Game> findGameInfoByFilter(@Param("criteria") SearchCriteria criteria, Pageable pageable);
+      "SELECT g FROM Game g "
+          + "JOIN g.platforms pl "
+          + "JOIN g.genres ge "
+          + "JOIN g.publisher pub "
+          + "JOIN g.rating r "
+          + "WHERE "
+          + "(:#{#criteria.platform} IS NULL OR :#{#criteria.platform} = '' OR pl.platform = :#{#criteria.platform}) AND "
+          + "(:#{#criteria.minScore} IS NULL OR g.score >= :#{#criteria.minScore}) AND "
+          + "(:#{#criteria.genre} IS NULL OR :#{#criteria.genre} = '' OR ge.genre = :#{#criteria.genre}) AND "
+          + "(:#{#criteria.publisher} IS NULL OR :#{#criteria.publisher} = '' OR pub.publisher = :#{#criteria.publisher}) AND "
+          + "(:#{#criteria.rating} IS NULL OR :#{#criteria.rating} = '' OR r.rating = :#{#criteria.rating}) AND "
+          + "(:#{#criteria.releaseStartDate} IS NULL OR g.releaseDate >= :#{#criteria.releaseStartDate}) AND "
+          + "(:#{#criteria.releaseEndDate} IS NULL OR g.releaseDate <= :#{#criteria.releaseEndDate}) "
+          + "ORDER BY FUNCTION('calculate_cosine_similarity', :fixedVector, g.vector) DESC")
+  List<Game> findGameInfoByFilter(
+      @Param("criteria") SearchCriteria criteria,
+      @Param("fixedVector") String fixedVector,
+      Pageable pageable);
 
   @Query(
-      """
-    select distinct g from Game g
-    join fetch g.platforms pl
-    join fetch g.genres ge
-    join fetch g.publisher pub
-    join fetch g.rating r
-    where
-    (:#{#criteria.platform} is null or :#{#criteria.platform} = '' or pl.platform = :#{#criteria.platform}) and
-    (:#{#criteria.minScore} is null or g.score >= :#{#criteria.minScore}) and
-    (:#{#criteria.genre} is null or :#{#criteria.genre} = '' or ge.genre = :#{#criteria.genre}) and
-    (:#{#criteria.publisher} is null or :#{#criteria.publisher} = '' or pub.publisher = :#{#criteria.publisher}) and
-    (:#{#criteria.rating} is null or :#{#criteria.rating} = '' or r.rating = :#{#criteria.rating}) and
-    (:#{#criteria.releaseStartDate} is null or g.releaseDate >= :#{#criteria.releaseStartDate}) and
-    (:#{#criteria.releaseEndDate} is null or g.releaseDate <= :#{#criteria.releaseEndDate})
-    """)
-  List<Game> findDetailedGameInfoByFilter(
-      @Param("criteria") SearchCriteria criteria, Pageable pageable);
+      "SELECT count(*) FROM Game g "
+          + "JOIN g.platforms pl "
+          + "JOIN g.genres ge "
+          + "JOIN g.publisher pub "
+          + "JOIN g.rating r "
+          + "WHERE "
+          + "(:#{#criteria.platform} IS NULL OR :#{#criteria.platform} = '' OR pl.platform = :#{#criteria.platform}) AND "
+          + "(:#{#criteria.minScore} IS NULL OR g.score >= :#{#criteria.minScore}) AND "
+          + "(:#{#criteria.genre} IS NULL OR :#{#criteria.genre} = '' OR ge.genre = :#{#criteria.genre}) AND "
+          + "(:#{#criteria.publisher} IS NULL OR :#{#criteria.publisher} = '' OR pub.publisher = :#{#criteria.publisher}) AND "
+          + "(:#{#criteria.rating} IS NULL OR :#{#criteria.rating} = '' OR r.rating = :#{#criteria.rating}) AND "
+          + "(:#{#criteria.releaseStartDate} IS NULL OR g.releaseDate >= :#{#criteria.releaseStartDate}) AND "
+          + "(:#{#criteria.releaseEndDate} IS NULL OR g.releaseDate <= :#{#criteria.releaseEndDate})")
+  Long countGames(@Param("criteria") SearchCriteria criteria);
 }

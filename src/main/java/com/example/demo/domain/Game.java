@@ -1,17 +1,19 @@
 package com.example.demo.domain;
 
+import com.vladmihalcea.hibernate.type.array.DoubleArrayType;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.TypeDef;
 
 @Entity
 @Table(name = "game")
 @Getter
 @Setter
+@TypeDef(name = "double-array", typeClass = DoubleArrayType.class)
 public class Game {
 
   @Id
@@ -28,7 +30,9 @@ public class Game {
   @Column(name = "summary", columnDefinition = "text")
   private String summary;
 
-  @ElementCollection private List<Double> vector;
+  @org.hibernate.annotations.Type(type = "double-array")
+  @Column(name = "vector", columnDefinition = "double precision[]")
+  private Double[] vector;
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name = "type_id")

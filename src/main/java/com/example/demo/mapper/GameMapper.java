@@ -32,9 +32,7 @@ public class GameMapper {
     String genres =
         game.getGenres().stream().map(Genre::getGenre).collect(Collectors.joining(", "));
 
-    List<Double> vector = game.getVector();
-
     return new GameInfo(
-        id, name, score, releaseDate, summary, rating, publisher, platform, genres, vector);
+        id, name, score, releaseDate, summary, rating, publisher, platform, genres, List.of());
   }
 }

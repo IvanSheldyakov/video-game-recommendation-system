@@ -18,7 +18,7 @@ public class Parser {
     this.beanFactory = beanFactory;
     this.keywordsService = keywordsService;
     this.webDriver = init();
-    // webDriver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+    //  webDriver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
   }
 
   public void parse() {
@@ -37,7 +37,7 @@ public class Parser {
 
   @PreDestroy
   private void clean() {
-    webDriver.quit();
+    // webDriver.quit();
   }
 
   private WebDriver init() {
@@ -45,6 +45,6 @@ public class Parser {
     ChromeOptions options = new ChromeOptions();
     options.addArguments("--remote-allow-origins=*");
 
-    return null; // ChromeDriver(options);
+    return null; // new ChromeDriver(options);
   }
 }

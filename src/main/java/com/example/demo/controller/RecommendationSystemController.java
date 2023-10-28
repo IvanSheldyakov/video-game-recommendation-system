@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.domain.Game;
 import com.example.demo.mapper.GameMapper;
 import com.example.demo.model.GameInfo;
 import com.example.demo.model.GameTypeBlock;
@@ -9,8 +8,8 @@ import com.example.demo.repository.GameRepository;
 import com.example.demo.service.GameInfoService;
 import com.example.demo.utils.Constants;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
@@ -62,10 +61,11 @@ public class RecommendationSystemController {
     // Используем PageRequest для указания страницы и количества элементов на странице
     Pageable pageable = PageRequest.of(page, 10);
 
-    // Используем метод findGameInfoByFilter для получения страницы игр
-    Page<Game> gamePage = gameRepository.findGameInfoByFilter(searchCriteria, pageable);
+    String v = convertListToString(searchCriteria.getCustomValues());
+    System.out.println(v);
 
-    // Используем метод findDetailedGameInfoByFilter для получения детальной информации о играх
+    var gamePage = gameInfoService.getGameInfos(searchCriteria, v, pageable);
+
     List<GameInfo> games = gamePage.getContent().stream().map(GameMapper::toGameInfo).toList();
 
     model.addAttribute("games", games);
@@ -73,5 +73,9 @@ public class RecommendationSystemController {
     model.addAttribute("totalPages", gamePage.getTotalPages());
 
     return "game_info_page";
+  }
+
+  public static String convertListToString(List<String> list) {
+    return list.stream().collect(Collectors.joining(","));
   }
 }
