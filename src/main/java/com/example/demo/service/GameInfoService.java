@@ -2,13 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.domain.*;
 import com.example.demo.model.GameTypeBlock;
-import com.example.demo.model.SearchCriteria;
 import com.example.demo.repository.*;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -49,12 +45,6 @@ public class GameInfoService {
     return ratingRepository.findAll(Sort.by(Sort.Order.asc("rating"))).stream()
         .map(Rating::getRating)
         .toList();
-  }
-
-  public Page<Game> getGameInfos(SearchCriteria searchCriteria, String v, Pageable pageable) {
-    List<Game> gamePage = gameRepository.findGameInfoByFilter(searchCriteria, v, pageable);
-    long c = gameRepository.countGames(searchCriteria);
-    return new PageImpl<>(gamePage, pageable, c);
   }
 
   private GameTypeBlock map(Type type) {

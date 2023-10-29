@@ -9,13 +9,12 @@ import com.example.demo.service.GameInfoService;
 import com.example.demo.utils.Constants;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping
@@ -46,36 +45,61 @@ public class RecommendationSystemController {
   }
 
   @PostMapping("/submit")
-  public String handleSubmit(SearchCriteria searchCriteria, RedirectAttributes redirectAttributes) {
-    // Добавляем критерии поиска в атрибуты редиректа
-    redirectAttributes.addFlashAttribute("searchCriteria", searchCriteria);
-    return "redirect:/results"; // редирект на GET метод
+  public String handleSubmit(SearchCriteria searchCriteria, HttpSession session) {
+    session.setAttribute("searchCriteria", searchCriteria);
+    return "redirect:/results";
   }
 
   @GetMapping("/results")
   public String handleResults(
-      @RequestParam(defaultValue = "0") int page,
-      @ModelAttribute("searchCriteria") SearchCriteria searchCriteria,
-      Model model) {
+      @RequestParam(defaultValue = "0") int page, HttpSession session, Model model) {
 
-    // Используем PageRequest для указания страницы и количества элементов на странице
-    Pageable pageable = PageRequest.of(page, 10);
+    SearchCriteria searchCriteria = (SearchCriteria) session.getAttribute("searchCriteria");
+    if (searchCriteria == null) {
+      throw new RuntimeException("Search criteria is null");
+    }
 
-    String v = convertListToString(searchCriteria.getCustomValues());
-    System.out.println(v);
+    String vector = convertListToString(searchCriteria.getCustomValues());
+    System.out.println(vector);
 
-    var gamePage = gameInfoService.getGameInfos(searchCriteria, v, pageable);
+    var count =
+        gameRepository.countGameInfoByFilter(
+            searchCriteria.getPlatform(),
+            searchCriteria.getMinScore(),
+            searchCriteria.getGenre(),
+            searchCriteria.getPublisher(),
+            searchCriteria.getRating(),
+            searchCriteria.getReleaseStartDate(),
+            searchCriteria.getReleaseStartDate());
 
-    List<GameInfo> games = gamePage.getContent().stream().map(GameMapper::toGameInfo).toList();
+    int totalPages = (int) Math.ceil((double) count / 10);
+
+    int offset = page * 10;
+
+    var gamePage =
+        gameRepository.findGameInfoByFilter(
+            searchCriteria.getPlatform(),
+            searchCriteria.getMinScore(),
+            searchCriteria.getGenre(),
+            searchCriteria.getPublisher(),
+            searchCriteria.getRating(),
+            searchCriteria.getReleaseStartDate(),
+            searchCriteria.getReleaseStartDate(),
+            vector,
+            10,
+            offset);
+
+    List<GameInfo> games = gamePage.stream().map(GameMapper::toGameInfo).toList();
 
     model.addAttribute("games", games);
     model.addAttribute("currentPage", page);
-    model.addAttribute("totalPages", gamePage.getTotalPages());
+    model.addAttribute(
+        "pageNumbers", IntStream.range(0, totalPages).boxed().collect(Collectors.toList()));
 
     return "game_info_page";
   }
 
   public static String convertListToString(List<String> list) {
-    return list.stream().collect(Collectors.joining(","));
+    return String.join(",", list);
   }
 }
