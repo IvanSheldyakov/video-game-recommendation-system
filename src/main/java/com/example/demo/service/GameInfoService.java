@@ -1,9 +1,16 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.*;
+import com.example.demo.mapper.GameMapper;
+import com.example.demo.model.GameInfo;
 import com.example.demo.model.GameTypeBlock;
+import com.example.demo.model.Page;
+import com.example.demo.model.SearchCriteria;
 import com.example.demo.repository.*;
+import com.example.demo.utils.VectorNormalizer;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -12,6 +19,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class GameInfoService {
 
+  private static final int LIMIT = 10;
   private final TypeRepository typeRepository;
   private final PublisherRepository publisherRepository;
   private final GenreRepository genreRepository;
@@ -47,7 +55,48 @@ public class GameInfoService {
         .toList();
   }
 
+  public Page getPageOfGameInfos(SearchCriteria searchCriteria, int page) {
+    String vector = convertListToStringAndNormalize(searchCriteria.getCustomValues());
+
+    long count =
+        gameRepository.countGameInfoByFilter(
+            searchCriteria.getPlatform(),
+            searchCriteria.getMinScore(),
+            searchCriteria.getGenre(),
+            searchCriteria.getPublisher(),
+            searchCriteria.getRating(),
+            searchCriteria.getReleaseStartDate(),
+            searchCriteria.getReleaseStartDate());
+
+    int totalPages = (int) Math.ceil((double) count / LIMIT);
+
+    int offset = page * LIMIT;
+
+    List<Game> games =
+        gameRepository.findGameInfoByFilter(
+            searchCriteria.getPlatform(),
+            searchCriteria.getMinScore(),
+            searchCriteria.getGenre(),
+            searchCriteria.getPublisher(),
+            searchCriteria.getRating(),
+            searchCriteria.getReleaseStartDate(),
+            searchCriteria.getReleaseStartDate(),
+            vector,
+            LIMIT,
+            offset);
+
+    List<GameInfo> gameInfos = games.stream().map(GameMapper::toGameInfo).toList();
+
+    return new Page(totalPages, gameInfos);
+  }
+
   private GameTypeBlock map(Type type) {
     return new GameTypeBlock(type.getId().toString(), type.getTypeName(), type.getDescription());
+  }
+
+  private String convertListToStringAndNormalize(List<String> list) {
+    List<Integer> integerList = list.stream().map(Integer::parseInt).toList();
+    Double[] vector = VectorNormalizer.normalize(integerList);
+    return Arrays.stream(vector).map(String::valueOf).collect(Collectors.joining(","));
   }
 }
