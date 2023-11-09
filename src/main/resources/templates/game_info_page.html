@@ -15,11 +15,11 @@
 
 <div class="container mt-5">
     <h2 class="mb-4">Информация о играх</h2>
-    <th:block th:each="game, iterStat : ${games}">
+    <th:block th:each="game : ${games}">
         <div class="card mb-4">
             <div class="card-body">
                 <!-- Оглавление блока -->
-                <h5 class="card-title font-weight-bold" th:text="|${iterStat.count}. ${game.name}|"></h5>
+                <h5 class="card-title font-weight-bold" th:text="|${game.name}|"></h5>
                 <div class="row">
                     <!-- Левая часть блока с информацией -->
                     <div class="col-md-4">
@@ -45,14 +45,17 @@
         <div class="col-md-12">
             <nav aria-label="Page navigation">
                 <ul class="pagination">
-                    <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, totalPages-1)}"
-                        th:class="${pageNumber == currentPage} ? 'active' : ''">
-                        <a class="page-link" th:href="@{/results(page=${pageNumber})}" th:text="${pageNumber + 1}"></a>
+                    <li class="page-item" th:each="i : ${pageNumbers}"
+                        th:class="${i == currentPage} ? 'active' : ''">
+                        <a class="page-link"
+                           th:href="@{/results(page=${i})}"
+                           th:text="${i + 1}"></a>
                     </li>
                 </ul>
             </nav>
         </div>
     </div>
+
 
 </div>
 

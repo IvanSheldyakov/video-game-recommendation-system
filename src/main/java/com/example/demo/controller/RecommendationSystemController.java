@@ -1,22 +1,20 @@
 package com.example.demo.controller;
 
-import com.example.demo.domain.Game;
-import com.example.demo.mapper.GameMapper;
-import com.example.demo.model.GameInfo;
 import com.example.demo.model.GameTypeBlock;
+import com.example.demo.model.Page;
 import com.example.demo.model.SearchCriteria;
-import com.example.demo.repository.GameRepository;
 import com.example.demo.service.GameInfoService;
 import com.example.demo.utils.Constants;
 import java.util.List;
+import java.util.stream.IntStream;
+import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping
@@ -24,7 +22,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class RecommendationSystemController {
 
   private final GameInfoService gameInfoService;
-  private final GameRepository gameRepository;
 
   @GetMapping("/start")
   public String showStartPage(Model model) {
@@ -47,30 +44,27 @@ public class RecommendationSystemController {
   }
 
   @PostMapping("/submit")
-  public String handleSubmit(SearchCriteria searchCriteria, RedirectAttributes redirectAttributes) {
-    // Добавляем критерии поиска в атрибуты редиректа
-    redirectAttributes.addFlashAttribute("searchCriteria", searchCriteria);
-    return "redirect:/results"; // редирект на GET метод
+  public String handleSubmit(SearchCriteria searchCriteria, HttpSession session) {
+    session.setAttribute("searchCriteria", searchCriteria);
+    return "redirect:/results";
   }
 
   @GetMapping("/results")
   public String handleResults(
-      @RequestParam(defaultValue = "0") int page,
-      @ModelAttribute("searchCriteria") SearchCriteria searchCriteria,
-      Model model) {
+      @RequestParam(defaultValue = "0") int page, HttpSession session, Model model) {
 
-    // Используем PageRequest для указания страницы и количества элементов на странице
-    Pageable pageable = PageRequest.of(page, 10);
+    SearchCriteria searchCriteria = (SearchCriteria) session.getAttribute("searchCriteria");
+    if (searchCriteria == null) {
+      throw new IllegalArgumentException("Search criteria is null");
+    }
 
-    // Используем метод findGameInfoByFilter для получения страницы игр
-    Page<Game> gamePage = gameRepository.findGameInfoByFilter(searchCriteria, pageable);
+    Page gameInfoPage = gameInfoService.getPageOfGameInfos(searchCriteria, page);
 
-    // Используем метод findDetailedGameInfoByFilter для получения детальной информации о играх
-    List<GameInfo> games = gamePage.getContent().stream().map(GameMapper::toGameInfo).toList();
+    List<Integer> pageNumbers = IntStream.range(0, gameInfoPage.totalPages()).boxed().toList();
 
-    model.addAttribute("games", games);
+    model.addAttribute("games", gameInfoPage.gameInfos());
     model.addAttribute("currentPage", page);
-    model.addAttribute("totalPages", gamePage.getTotalPages());
+    model.addAttribute("pageNumbers", pageNumbers);
 
     return "game_info_page";
   }

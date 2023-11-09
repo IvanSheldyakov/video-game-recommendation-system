@@ -1,20 +1,21 @@
 package com.example.demo.utils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class VectorNormalizer {
 
-  public static List<Double> normalize(List<Integer> vector) {
+  public static Double[] normalize(List<Integer> vector) {
     double norm = calculateNorm(vector);
 
-    List<Double> normalizedVector = new ArrayList<>();
+    Double[] normalizedVector = new Double[vector.size()];
+    int index = 0;
     for (Integer value : vector) {
       if (norm == 0) {
-        normalizedVector.add(0.0);
+        normalizedVector[index] = 0.0;
       } else {
-        normalizedVector.add(value / norm);
+        normalizedVector[index] = value / norm;
       }
+      index++;
     }
     return normalizedVector;
   }
