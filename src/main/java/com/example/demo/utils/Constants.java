@@ -11,7 +11,7 @@ public final class Constants {
   public static final String ADJECTIVE = "JJ";
   public static final String NOUN = "NN";
   public static final String NOUNS = "NNS";
-  public static final String[] colors = {
+  public static final String[] COLORS = {
     "bg-pastel1", "bg-pastel2", "bg-pastel3", "bg-pastel4",
     "bg-pastel5", "bg-pastel6", "bg-pastel7", "bg-pastel8",
     "bg-pastel9", "bg-pastel10", "bg-pastel11", "bg-pastel12",

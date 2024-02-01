@@ -32,7 +32,7 @@ public class RecommendationSystemController {
     List<String> ratings = gameInfoService.getRatings();
     List<GameTypeBlock> gameTypes = gameInfoService.getGameTypes();
 
-    model.addAttribute("colors", Constants.colors);
+    model.addAttribute("colors", Constants.COLORS);
     model.addAttribute("platforms", platforms);
     model.addAttribute("genres", genres);
     model.addAttribute("publishers", publishers);
