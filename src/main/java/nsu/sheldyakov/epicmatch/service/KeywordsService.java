@@ -1,16 +1,16 @@
 package nsu.sheldyakov.epicmatch.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import nsu.sheldyakov.epicmatch.domain.*;
 import nsu.sheldyakov.epicmatch.model.Bounds;
 import nsu.sheldyakov.epicmatch.repository.BlockWordRepository;
 import nsu.sheldyakov.epicmatch.repository.TypeRepository;
 import nsu.sheldyakov.epicmatch.repository.WordCountRepository;
 import nsu.sheldyakov.epicmatch.repository.WordRepository;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,10 +47,10 @@ public class KeywordsService {
 
     Set<String> allKeywords =
         types.stream()
-            .flatMap(type -> wordRepository.findWordsByType(type).stream().map(Word::getWord))
+            .flatMap(type -> wordRepository.findWordsByType(type).stream().map(KeyWord::getWord))
             .collect(Collectors.toSet());
 
-    List<Word> newKeyWords = new ArrayList<>();
+    List<KeyWord> newKeyKeyWords = new ArrayList<>();
     types.forEach(
         type -> {
           List<WordCount> countList =
@@ -71,13 +71,13 @@ public class KeywordsService {
               .filter(word -> !blockWords.contains(word))
               .forEach(
                   newKeyword -> {
-                    newKeyWords.add(new Word(newKeyword, type));
+                    newKeyKeyWords.add(new KeyWord(newKeyword, type));
                     allKeywords.add(newKeyword);
                   });
         });
     // wordRepository.saveAll(newKeyWords);
-    System.out.println(newKeyWords);
-    System.out.println(newKeyWords.size());
+    System.out.println(newKeyKeyWords);
+    System.out.println(newKeyKeyWords.size());
   }
 
   private Bounds findBounds(List<WordCount> countList) {

@@ -1,16 +1,15 @@
 package nsu.sheldyakov.epicmatch.service;
 
-
-import nsu.sheldyakov.epicmatch.domain.*;
-import nsu.sheldyakov.epicmatch.utils.Constants;
-import nsu.sheldyakov.epicmatch.utils.MonthConverter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import nsu.sheldyakov.epicmatch.utils.VectorNormalizer;
+import nsu.sheldyakov.epicmatch.domain.*;
 import nsu.sheldyakov.epicmatch.repository.*;
+import nsu.sheldyakov.epicmatch.utils.Constants;
+import nsu.sheldyakov.epicmatch.utils.MonthConverter;
+import nsu.sheldyakov.epicmatch.utils.VectorNormalizer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -233,7 +232,7 @@ public class GameHandler extends Thread {
                   List<String> wordList =
                       wordRepository.findWordsByType(type).stream()
                           .parallel()
-                          .map(Word::getWord)
+                          .map(KeyWord::getWord)
                           .toList();
                   return (int) allWords.stream().parallel().filter(wordList::contains).count();
                 })

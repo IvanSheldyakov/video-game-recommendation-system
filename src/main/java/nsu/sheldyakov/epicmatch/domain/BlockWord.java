@@ -13,11 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class BlockWord {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long id;
-
-  private String word;
+  @Id private String word;
 
   public BlockWord(String word) {
     this.word = word;

@@ -1,13 +1,13 @@
 package nsu.sheldyakov.epicmatch.repository;
 
-import nsu.sheldyakov.epicmatch.domain.Type;
-import nsu.sheldyakov.epicmatch.domain.Word;
 import java.util.List;
+import nsu.sheldyakov.epicmatch.domain.KeyWord;
+import nsu.sheldyakov.epicmatch.domain.Type;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface WordRepository extends JpaRepository<Word, Long> {
+public interface WordRepository extends JpaRepository<KeyWord, Long> {
 
-  List<Word> findWordsByType(Type type);
+  List<KeyWord> findWordsByType(Type type);
 }

@@ -1,7 +1,5 @@
 package nsu.sheldyakov.epicmatch.domain;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import javax.persistence.*;
 import lombok.Getter;
@@ -9,21 +7,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
-@Table(name = "publisher")
 @Entity
+@Table(name = "key_word")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Publisher {
+public class KeyWord {
 
-  @Id private String name;
+  @Id private String word;
 
-  @OneToMany(mappedBy = "publisher", cascade = CascadeType.ALL)
-  private List<Game> games = new ArrayList<>();
-
-  public Publisher(String name) {
-    this.name = name;
-  }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "game_type")
+  private Type type;
 
   @Override
   public final boolean equals(Object o) {
@@ -38,8 +33,8 @@ public class Publisher {
             ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
             : this.getClass();
     if (thisEffectiveClass != oEffectiveClass) return false;
-    Publisher publisher = (Publisher) o;
-    return getName() != null && Objects.equals(getName(), publisher.getName());
+    KeyWord keyWord1 = (KeyWord) o;
+    return getWord() != null && Objects.equals(getWord(), keyWord1.getWord());
   }
 
   @Override

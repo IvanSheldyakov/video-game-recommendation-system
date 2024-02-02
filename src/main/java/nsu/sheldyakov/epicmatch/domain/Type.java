@@ -1,38 +1,31 @@
 package nsu.sheldyakov.epicmatch.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.*;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 
 @Entity
-@Table(name = "type")
+@Table(name = "game_type")
 @Getter
 @Setter
-@ToString
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class Type {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Integer id;
-
-  private String typeName;
+  @Id private String name;
 
   @Column(name = "description", columnDefinition = "text")
   private String description;
 
-  @OneToMany(mappedBy = "type")
-  @ToString.Exclude
-  private List<Word> words;
+  @OneToMany(mappedBy = "type", cascade = CascadeType.ALL)
+  private List<KeyWord> keyWords = new ArrayList<>();
 
-  @OneToMany(mappedBy = "type")
-  @ToString.Exclude
-  private List<Game> games;
+  @OneToMany(mappedBy = "type", cascade = CascadeType.ALL)
+  private List<KeyWord> wordCounts = new ArrayList<>();
 
   @Override
   public final boolean equals(Object o) {
@@ -48,7 +41,7 @@ public class Type {
             : this.getClass();
     if (thisEffectiveClass != oEffectiveClass) return false;
     Type type = (Type) o;
-    return getId() != null && Objects.equals(getId(), type.getId());
+    return getName() != null && Objects.equals(getName(), type.getName());
   }
 
   @Override

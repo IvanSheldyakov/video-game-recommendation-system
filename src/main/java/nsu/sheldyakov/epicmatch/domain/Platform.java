@@ -1,11 +1,16 @@
 package nsu.sheldyakov.epicmatch.domain;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.proxy.HibernateProxy;
 
 @Entity
 @Table(name = "platform")
@@ -14,28 +19,36 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Platform {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Integer id;
+  @Id private String name;
 
-  private String platform;
+  @ManyToMany(mappedBy = "platforms")
+  private Set<Game> games = new HashSet<>();
 
-  @ManyToMany private Set<Game> games;
-
-  public Platform(String platform) {
-    this.platform = platform;
+  public Platform(String name) {
+    this.name = name;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public final boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof Platform)) return false;
-    Platform platform1 = (Platform) o;
-    return Objects.equals(getPlatform(), platform1.getPlatform());
+    if (o == null) return false;
+    Class<?> oEffectiveClass =
+        o instanceof HibernateProxy
+            ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
+            : o.getClass();
+    Class<?> thisEffectiveClass =
+        this instanceof HibernateProxy
+            ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
+            : this.getClass();
+    if (thisEffectiveClass != oEffectiveClass) return false;
+    Platform platform = (Platform) o;
+    return getName() != null && Objects.equals(getName(), platform.getName());
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(getPlatform());
+  public final int hashCode() {
+    return this instanceof HibernateProxy
+        ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode()
+        : getClass().hashCode();
   }
 }

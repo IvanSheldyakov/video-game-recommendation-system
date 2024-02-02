@@ -5,6 +5,7 @@ import javax.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.proxy.HibernateProxy;
 
 @Entity
 @Table(name = "word_count")
@@ -13,34 +14,35 @@ import lombok.Setter;
 @NoArgsConstructor
 public class WordCount {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long id;
+  @Id private String word;
 
-  private String word;
+  private Long count;
 
-  private String typeName;
-
-  private long count;
-
-  private int inGames;
-
-  public WordCount(String word, String typeName) {
-    this.word = word;
-    this.typeName = typeName;
-  }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "type")
+  private Type type;
 
   @Override
-  public boolean equals(Object o) {
+  public final boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof WordCount)) return false;
+    if (o == null) return false;
+    Class<?> oEffectiveClass =
+        o instanceof HibernateProxy
+            ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
+            : o.getClass();
+    Class<?> thisEffectiveClass =
+        this instanceof HibernateProxy
+            ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
+            : this.getClass();
+    if (thisEffectiveClass != oEffectiveClass) return false;
     WordCount wordCount = (WordCount) o;
-    return Objects.equals(getWord(), wordCount.getWord())
-        && Objects.equals(getTypeName(), wordCount.getTypeName());
+    return getWord() != null && Objects.equals(getWord(), wordCount.getWord());
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(getWord(), getTypeName());
+  public final int hashCode() {
+    return this instanceof HibernateProxy
+        ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode()
+        : getClass().hashCode();
   }
 }
