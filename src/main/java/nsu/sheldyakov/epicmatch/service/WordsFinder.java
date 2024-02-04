@@ -1,13 +1,12 @@
 package nsu.sheldyakov.epicmatch.service;
 
-import nsu.sheldyakov.epicmatch.utils.Constants;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-
+import nsu.sheldyakov.epicmatch.utils.Constants;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.SimpleTokenizer;

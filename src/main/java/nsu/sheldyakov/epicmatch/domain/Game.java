@@ -46,6 +46,9 @@ public class Game {
   @JoinColumn(name = "genre")
   private Genre genre;
 
+  @Column(name = "description", columnDefinition = "text")
+  private String description;
+
   @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinTable(
       name = "game_platform",

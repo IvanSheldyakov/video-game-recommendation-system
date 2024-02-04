@@ -1,8 +1,8 @@
 package nsu.sheldyakov.epicmatch.repository;
 
-import nsu.sheldyakov.epicmatch.domain.Game;
 import java.time.LocalDate;
 import java.util.List;
+import nsu.sheldyakov.epicmatch.domain.Game;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

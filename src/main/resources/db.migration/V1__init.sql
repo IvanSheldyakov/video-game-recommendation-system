@@ -34,6 +34,7 @@ create table if not exists game_info (
     score smallint,
     release_date date,
     summary text,
+    description text,
     vector double precision[],
     rating text references age_rating(name) ,
     publisher text references publisher(name),

@@ -1,14 +1,14 @@
 package nsu.sheldyakov.epicmatch.controller;
 
+import java.util.List;
+import java.util.stream.IntStream;
+import javax.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import nsu.sheldyakov.epicmatch.model.GameTypeBlock;
 import nsu.sheldyakov.epicmatch.model.Page;
 import nsu.sheldyakov.epicmatch.model.SearchCriteria;
 import nsu.sheldyakov.epicmatch.service.GameInfoService;
 import nsu.sheldyakov.epicmatch.utils.Constants;
-import java.util.List;
-import java.util.stream.IntStream;
-import javax.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

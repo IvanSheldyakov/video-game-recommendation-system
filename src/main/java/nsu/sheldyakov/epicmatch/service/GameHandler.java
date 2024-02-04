@@ -3,6 +3,7 @@ package nsu.sheldyakov.epicmatch.service;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import nsu.sheldyakov.epicmatch.domain.*;
@@ -51,179 +52,11 @@ public class GameHandler extends Thread {
     }
   }
 
-  private void fillGameTextDescription(StringBuilder text) throws IOException {
-    Document criticReviewsDoc = getCriticReviewsDoc();
-    var elements =
-        criticReviewsDoc
-            .body()
-            .select(
-                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductReviews-wrapper > div.c-pageProductReviews.u-grid.g-grid-container.g-outer-spacing-bottom-xxlarge > section > div.c-pageProductReviews_row.g-outer-spacing-bottom-xxlarge")
-            .select("div.c-siteReview_main.g-inner-spacing-medium");
-
-    for (var elem : elements) {
-      text.append(elem.text()).append(" ");
-    }
-
-    getIgnReview(criticReviewsDoc, text);
-    getEurogamerReview(criticReviewsDoc, text);
-  }
-
-  private Document getCriticReviewsDoc() {
-
-    webDriver.get(gameUrl + Constants.TO_CRITIC_REVIEWS);
-    String pageSource = webDriver.getPageSource();
-    return Jsoup.parse(pageSource);
-  }
-
-  private Game fillGameInfo() throws IOException {
-    webDriver.get(gameUrl);
-    Document gameDoc = Jsoup.parse(webDriver.getPageSource());
-
-    String gameName = getGameName(gameDoc);
-
-    Integer score = getScore(gameDoc);
-
-    String date = getDate(gameDoc);
-
-    Rating rating = getRating(gameDoc);
-
-    Set<Genre> genres = getGenres(gameDoc);
-
-    Set<Platform> platforms = getPlatform(gameDoc);
-
-    Publisher publisher = getPublisher(gameDoc);
-
-    Document gameDetails = Jsoup.connect(gameUrl + Constants.TO_DETAILS).get();
-    String summary = getSummary(gameDetails);
-
-    Game game = new Game();
-    game.setName(gameName);
-    game.getPlatforms().addAll(platforms);
-    game.getGenres().addAll(genres);
-    game.setScore(score);
-    game.setReleaseDate(getReleaseDate(date));
-    game.setPublisher(publisher);
-    game.setRating(rating);
-    game.setSummary(summary);
-    return game;
-  }
-
-  private String getDate(Document gameDoc) {
-    return gameDoc
-        .body()
-        .select("#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame")
-        .select(
-            "div.c-productHero_player-scoreInfo.u-grid.g-grid-container > div.c-productHero_score-container.u-flexbox.u-flexbox-column.g-bg-white > div.g-text-xsmall > span.u-text-uppercase")
-        .get(0)
-        .text()
-        .trim();
-  }
-
-  private Integer getScore(Document gameDoc) {
-    return Integer.parseInt(
-        gameDoc
-            .body()
-            .select("#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame")
-            .select(
-                "div.c-productHero_player-scoreInfo.u-grid.g-grid-container > div.c-productHero_score-container.u-flexbox.u-flexbox-column.g-bg-white > div.c-productHero_scoreInfo.g-inner-spacing-top-medium.g-outer-spacing-bottom-medium.g-outer-spacing-top-medium > div:nth-child(1) > div > div.c-productScoreInfo_scoreContent.u-flexbox.u-flexbox-alignCenter.u-flexbox-justifyFlexEnd.g-width-100.u-flexbox-nowrap > div.c-productScoreInfo_scoreNumber.u-float-right > div > div > span")
-            .get(0)
-            .text()
-            .trim());
-  }
-
-  private String getGameName(Document gameDoc) {
-    return gameDoc
-        .body()
-        .select("#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame")
-        .select(
-            "div.c-productHero_player-scoreInfo.u-grid.g-grid-container > div.c-productHero_score-container.u-flexbox.u-flexbox-column.g-bg-white > div.c-productHero_title.g-inner-spacing-bottom-medium.g-outer-spacing-top-medium > div")
-        .get(0)
-        .text()
-        .trim();
-  }
-
-  private Set<Platform> getPlatform(Document doc) {
-    var platforms =
-        doc.body()
-            .select(
-                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-gameDetails")
-            .select("div.c-gameDetails_Platforms.u-flexbox.u-flexbox-row")
-            .select("li.c-gameDetails_listItem");
-    return platforms.stream()
-        .map(Element::text)
-        .map(platform -> platformRepository.findByPlatform(platform).orElse(new Platform(platform)))
-        .collect(Collectors.toSet());
-  }
-
-  private String getTrailerUrl(Document doc) {
-    Element element = doc.getElementById("videoContainer_wrapper");
-    if (element == null) {
-      return null;
-    } else {
-      return element.attr("data-mcvideourl").trim();
-    }
-  }
-
-  private Publisher getPublisher(Document doc) {
-    String publisher =
-        doc.body()
-            .select(
-                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-gameDetails")
-            .select(
-                "div.c-gameDetails_Distributor.u-flexbox.u-flexbox-row > span.g-outer-spacing-left-medium-fluid.g-color-gray70.u-block")
-            .text();
-    return publisherRepository.findByPublisher(publisher).orElse(new Publisher(publisher));
-  }
-
-  private Rating getRating(Document doc) {
-    var el =
-        doc.body()
-            .select(
-                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-productionDetailsGame-summary.g-outer-spacing-bottom-small.g-container-rounded-small > div > div > div.c-productionDetailsGame_esrb_title.u-inline-block.g-outer-spacing-left-medium-fluid");
-
-    if (el.size() < 1) {
-      return null;
-    } else {
-      String rating = el.text().trim();
-      return ratingRepository.findByRating(rating).orElse(new Rating(rating));
-    }
-  }
-
-  private Set<Genre> getGenres(Document doc) {
-    String genre =
-        doc.body()
-            .select(
-                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductGame > div.c-pageProduct_row.g-grid-container.c-pageProductionDetails > div > div > div.c-productionDetailsGame_grid.u-grid > div.c-gameDetails > div.c-gameDetails_sectionContainer.u-flexbox.u-flexbox-row.u-flexbox-alignBaseline > ul > li > div > a > span")
-            .text()
-            .trim();
-    return Set.of(genreRepository.findByGenre(genre).orElse(new Genre(genre)));
-  }
-
-  private String getSummary(Document doc) {
-    String description =
-        doc.body()
-            .select(
-                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductDetails.g-grid-container.g-outer-spacing-bottom-xxlarge > div.c-pageProductDetails_description.g-outer-spacing-bottom-xlarge")
-            .text()
-            .trim();
-    if (description.length() < 13) {
-      return "Нет";
-    }
-    return description.substring("Description: ".length());
-  }
-
-  private LocalDate getReleaseDate(String date) {
-    String[] parts = date.split(",");
-    String[] monthAndDay = parts[0].split(" ");
-    int year = Integer.parseInt(parts[1].trim());
-    int month = MonthConverter.convert(monthAndDay[0]);
-    int day = Integer.parseInt(monthAndDay[1]);
-    return LocalDate.of(year, month, day);
-  }
 
   private void analyzeTypeOfGame(HashMap<String, List<String>> map, Game game) {
     List<String> allWords = map.values().stream().flatMap(List::stream).toList();
 
+    gameRepository.s
     List<Type> types = typeRepository.findAll();
     List<Integer> vector =
         types.stream()
@@ -238,6 +71,7 @@ public class GameHandler extends Thread {
                 })
             .toList();
 
+    List<CompletableFuture<?>> l = List.of();
     game.setVector(VectorNormalizer.normalize(vector));
     Type type = getType(vector);
     game.setType(type);
@@ -278,62 +112,5 @@ public class GameHandler extends Thread {
           }
         });
     wordCountRepository.saveAll(wordCountsToSave);
-  }
-
-  private void getIgnReview(Document doc, StringBuilder text) {
-    Set<String> urls =
-        doc
-            .body()
-            .select(
-                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductReviews-wrapper > div.c-pageProductReviews.u-grid.g-grid-container.g-outer-spacing-bottom-xxlarge > section > div.c-pageProductReviews_row.g-outer-spacing-bottom-xxlarge")
-            .select(
-                "div.c-siteReview_extra.u-grid.u-grid-gap-medium.g-inner-spacing-medium.o-border-thin-top.g-border-gray30 > a")
-            .stream()
-            .map(elem -> elem.attr("href"))
-            .filter(url -> url.contains("ign") && url.contains("articles"))
-            .collect(Collectors.toSet());
-
-    urls.forEach(
-        url -> {
-          try {
-            var newDoc = Jsoup.connect(url).get();
-            var elems = newDoc.body().select("section.article-page");
-            if (elems.size() < 1) {
-              return;
-            }
-            text.append(elems.get(0).text());
-          } catch (IOException ignored) {
-          }
-        });
-  }
-
-  private void getEurogamerReview(Document doc, StringBuilder text) {
-    Set<String> urls =
-        doc
-            .body()
-            .select(
-                "#__layout > div > div.c-layoutDefault_page > div.c-pageProductReviews-wrapper > div.c-pageProductReviews.u-grid.g-grid-container.g-outer-spacing-bottom-xxlarge > section > div.c-pageProductReviews_row.g-outer-spacing-bottom-xxlarge")
-            .select(
-                "div.c-siteReview_extra.u-grid.u-grid-gap-medium.g-inner-spacing-medium.o-border-thin-top.g-border-gray30 > a")
-            .stream()
-            .map(elem -> elem.attr("href"))
-            .filter(url -> url.contains("eurogamer.net"))
-            .collect(Collectors.toSet());
-
-    urls.forEach(
-        url -> {
-          try {
-            var newDoc = Jsoup.connect(url).get();
-            var elems =
-                newDoc
-                    .body()
-                    .select("#content_above > div.page_content > article > div > div > section");
-            if (elems.size() < 1) {
-              return;
-            }
-            text.append(elems.get(0).text());
-          } catch (IOException ignored) {
-          }
-        });
   }
 }

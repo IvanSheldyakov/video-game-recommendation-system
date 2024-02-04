@@ -1,8 +1,8 @@
 package nsu.sheldyakov.epicmatch.repository;
 
-import nsu.sheldyakov.epicmatch.domain.WordCount;
 import java.util.List;
 import java.util.Optional;
+import nsu.sheldyakov.epicmatch.domain.WordCount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

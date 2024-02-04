@@ -1,5 +1,9 @@
 package nsu.sheldyakov.epicmatch.service;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import nsu.sheldyakov.epicmatch.domain.*;
 import nsu.sheldyakov.epicmatch.mapper.GameMapper;
 import nsu.sheldyakov.epicmatch.model.GameInfo;
@@ -8,10 +12,6 @@ import nsu.sheldyakov.epicmatch.model.Page;
 import nsu.sheldyakov.epicmatch.model.SearchCriteria;
 import nsu.sheldyakov.epicmatch.repository.*;
 import nsu.sheldyakov.epicmatch.utils.VectorNormalizer;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
