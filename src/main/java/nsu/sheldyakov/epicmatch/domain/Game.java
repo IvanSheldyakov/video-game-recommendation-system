@@ -18,7 +18,9 @@ import org.hibernate.proxy.HibernateProxy;
 @TypeDef(name = "double-array", typeClass = DoubleArrayType.class)
 public class Game {
 
-  @Id private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
 
   private String name;
 

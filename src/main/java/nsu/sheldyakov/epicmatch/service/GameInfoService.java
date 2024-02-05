@@ -26,6 +26,7 @@ public class GameInfoService {
   private final PlatformRepository platformRepository;
   private final RatingRepository ratingRepository;
   private final GameRepository gameRepository;
+  private final GameMapper gameMapper;
 
   public List<GameTypeBlock> getGameTypes() {
     return typeRepository.findAll().stream().map(this::map).toList();
@@ -33,25 +34,25 @@ public class GameInfoService {
 
   public List<String> getPublishers() {
     return publisherRepository.findAll(Sort.by(Sort.Order.asc("publisher"))).stream()
-        .map(Publisher::getPublisher)
+        .map(Publisher::getName)
         .toList();
   }
 
   public List<String> getGenres() {
     return genreRepository.findAll(Sort.by(Sort.Order.asc("genre"))).stream()
-        .map(Genre::getGenre)
+        .map(Genre::getName)
         .toList();
   }
 
   public List<String> getPlatforms() {
     return platformRepository.findAll(Sort.by(Sort.Order.asc("platform"))).stream()
-        .map(Platform::getPlatform)
+        .map(Platform::getName)
         .toList();
   }
 
   public List<String> getRatings() {
     return ratingRepository.findAll(Sort.by(Sort.Order.asc("rating"))).stream()
-        .map(Rating::getRating)
+        .map(Rating::getName)
         .toList();
   }
 
@@ -85,13 +86,13 @@ public class GameInfoService {
             LIMIT,
             offset);
 
-    List<GameInfo> gameInfos = games.stream().map(GameMapper::toGameInfo).toList();
+    List<GameInfo> gameInfos = games.stream().map(gameMapper::map).toList();
 
     return new Page(totalPages, gameInfos);
   }
 
   private GameTypeBlock map(Type type) {
-    return new GameTypeBlock(type.getId().toString(), type.getTypeName(), type.getDescription());
+    return new GameTypeBlock(type.getName(), type.getDescription());
   }
 
   private String convertListToStringAndNormalize(List<String> list) {

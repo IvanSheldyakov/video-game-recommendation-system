@@ -1,6 +1,5 @@
 package nsu.sheldyakov.epicmatch.model;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
@@ -19,5 +18,4 @@ public class GameInfo {
   private String publisher;
   private String platform;
   private String genre;
-  private List<Double> vector;
 }

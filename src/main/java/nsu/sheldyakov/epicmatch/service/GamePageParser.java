@@ -5,15 +5,15 @@ import static nsu.sheldyakov.epicmatch.utils.Constants.SUMMARY_MOCK;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import nsu.sheldyakov.epicmatch.model.GameData;
 import nsu.sheldyakov.epicmatch.utils.Constants;
 import nsu.sheldyakov.epicmatch.utils.MonthConverter;
+import nsu.sheldyakov.epicmatch.utils.TextFormatter;
 import org.jsoup.Jsoup;
-import org.jsoup.UncheckedIOException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.openqa.selenium.WebDriver;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class GamePageParser {
 
   private final WebDriver webDriver;
@@ -47,9 +48,10 @@ public class GamePageParser {
     try {
       gameDetails = Jsoup.connect(gameUrl + Constants.TO_DETAILS).get();
     } catch (IOException e) {
-      throw new UncheckedIOException("Cant get summary");
+      log.error("Cant get summary from {}", gameUrl + Constants.TO_DETAILS);
+      return SUMMARY_MOCK;
     }
-    return getSummary(gameDetails);
+    return TextFormatter.removeTextInBracketsAfterDot(getSummary(gameDetails));
   }
 
   private String getGameTextDescription(String gameUrl) {
@@ -80,7 +82,7 @@ public class GamePageParser {
     return Jsoup.parse(pageSource);
   }
 
-  private String getDate(Document gameDoc) {
+  private LocalDate getDate(Document gameDoc) {
     var elements =
         gameDoc
             .body()
@@ -89,7 +91,7 @@ public class GamePageParser {
                 "div.c-productHero_player-scoreInfo.u-grid.g-grid-container > "
                     + "div.c-productHero_score-container.u-flexbox.u-flexbox-column.g-bg-white > "
                     + "div.g-text-xsmall > span.u-text-uppercase");
-    return elements.isEmpty() ? null : elements.get(0).text().trim();
+    return elements.isEmpty() ? null : getReleaseDate(elements.get(0).text().trim());
   }
 
   private Integer getScore(Document gameDoc) {
@@ -120,7 +122,7 @@ public class GamePageParser {
         .trim();
   }
 
-  private List<String> getPlatforms(Document gameDoc) {
+  private Set<String> getPlatforms(Document gameDoc) {
     var platforms =
         gameDoc
             .body()
@@ -130,7 +132,7 @@ public class GamePageParser {
                     + "div > div > div.c-productionDetailsGame_grid.u-grid > div.c-gameDetails")
             .select("div.c-gameDetails_Platforms.u-flexbox.u-flexbox-row")
             .select("li.c-gameDetails_listItem");
-    return platforms.stream().map(Element::text).collect(Collectors.toList());
+    return platforms.stream().map(Element::text).collect(Collectors.toSet());
   }
 
   private String getPublisher(Document gameDoc) {

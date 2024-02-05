@@ -5,6 +5,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import nsu.sheldyakov.epicmatch.utils.Constants;
 import org.jsoup.Jsoup;
+import org.jsoup.UncheckedIOException;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,7 @@ public class BestGamesPageParser {
 
     } catch (IOException e) {
       log.error(e.getMessage() + " pageNumber={}", pageNumber);
+      throw new UncheckedIOException(e);
     }
   }
 }

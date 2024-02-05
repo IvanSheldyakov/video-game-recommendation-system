@@ -38,15 +38,14 @@ create table if not exists game_info (
     vector double precision[],
     rating text references age_rating(name) ,
     publisher text references publisher(name),
-    genre text references genre(name),
-    platform text
+    genre text references genre(name)
 );
 
 create table if not exists game_platform(
     game_id int,
     platform text,
     primary key (game_id, platform),
-    constraint game_id_fk foreign key (game_id) references game(id),
+    constraint game_id_fk foreign key (game_id) references game_info(id),
     constraint platform_fk foreign key (platform) references platform(name)
 );
 
