@@ -25,11 +25,13 @@ import org.springframework.stereotype.Component;
 public class GamePageParser {
 
   private final WebDriver webDriver;
+  private final RetryableWrapper retryableWrapper;
 
   public GameData getGameData(String gameUrl) {
     webDriver.get(gameUrl);
     Document gameDoc = Jsoup.parse(webDriver.getPageSource());
 
+    String summary = getSummary(gameUrl);
     return GameData.builder()
         .name(getGameName(gameDoc))
         .score(getScore(gameDoc))
@@ -39,15 +41,20 @@ public class GamePageParser {
         .publisher(getPublisher(gameDoc))
         .platforms(getPlatforms(gameDoc))
         .summary(getSummary(gameUrl))
-        .description(getGameTextDescription(gameUrl))
+        .description(getGameTextDescription(gameUrl) + summary)
         .build();
   }
 
   private String getSummary(String gameUrl) {
     Document gameDetails = null;
     try {
-      gameDetails = Jsoup.connect(gameUrl + Constants.TO_DETAILS).get();
-    } catch (IOException e) {
+      gameDetails =
+          retryableWrapper.wrapInRetryable(
+              () -> {
+                return Jsoup.connect(gameUrl + Constants.TO_DETAILS).get();
+              });
+
+    } catch (Exception e) {
       log.error("Cant get summary from {}", gameUrl + Constants.TO_DETAILS);
       return SUMMARY_MOCK;
     }
@@ -57,6 +64,7 @@ public class GamePageParser {
   private String getGameTextDescription(String gameUrl) {
     StringBuilder text = new StringBuilder();
     Document criticReviewsDoc = getCriticReviewsDoc(gameUrl);
+
     var elements =
         criticReviewsDoc
             .body()
@@ -65,7 +73,9 @@ public class GamePageParser {
                     + "div.c-pageProductReviews-wrapper > "
                     + "div.c-pageProductReviews.u-grid.g-grid-container.g-outer-spacing-bottom-xxlarge > "
                     + "section > div.c-pageProductReviews_row.g-outer-spacing-bottom-xxlarge")
-            .select("div.c-siteReview_main.g-inner-spacing-medium");
+            .select(
+                "div.c-siteReview.g-bg-gray10.u-grid.g-outer-spacing-bottom-large > div.c-siteReview_main.g-inner-spacing-medium")
+            .select("div > span");
 
     for (var elem : elements) {
       text.append(elem.text()).append(" ");
@@ -223,6 +233,7 @@ public class GamePageParser {
               return;
             }
             text.append(elems.get(0).text());
+            log.info("Visited ign url={}", url);
           } catch (IOException ignored) {
           }
         });
@@ -257,6 +268,7 @@ public class GamePageParser {
               return;
             }
             text.append(elems.get(0).text());
+            log.info("Visited euro url={}", url);
           } catch (IOException ignored) {
           }
         });

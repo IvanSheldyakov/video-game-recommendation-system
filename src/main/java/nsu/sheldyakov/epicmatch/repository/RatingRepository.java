@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface RatingRepository extends JpaRepository<Rating, String> {
 
   Optional<Rating> findByName(String name);
+
+  Rating save(Rating rating);
 }

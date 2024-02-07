@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface GenreRepository extends JpaRepository<Genre, String> {
 
   Optional<Genre> findByName(String string);
+
+  Genre save(Genre genre);
 }

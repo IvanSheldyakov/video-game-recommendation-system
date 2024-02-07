@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface PlatformRepository extends JpaRepository<Platform, String> {
 
   Optional<Platform> findByName(String name);
+
+  Platform save(Platform platform);
 }
