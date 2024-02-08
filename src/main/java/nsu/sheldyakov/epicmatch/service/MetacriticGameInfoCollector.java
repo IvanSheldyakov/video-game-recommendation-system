@@ -32,7 +32,6 @@ public class MetacriticGameInfoCollector {
   private final Map<String, Rating> ratingCache = new HashMap<>();
   private final Map<String, Publisher> publisherCache = new HashMap<>();
   private final Map<String, Genre> genreCache = new HashMap<>();
-  private final Map<String, Platform> platformCache = new HashMap<>();
 
   public void collect(int firstPageNumber, int lastPageNumber) {
     for (int pageNumber = firstPageNumber; pageNumber <= lastPageNumber; pageNumber++) {
@@ -91,15 +90,10 @@ public class MetacriticGameInfoCollector {
     Set<Platform> processedPlatforms =
         game.getPlatforms().stream()
             .map(
-                platform -> {
-                  if (platformCache.containsKey(platform.getName())) {
-                    return platformCache.get(platform.getName());
-                  } else {
-                    Platform newPlatform = platformRepository.save(platform);
-                    platformCache.put(newPlatform.getName(), newPlatform);
-                    return newPlatform;
-                  }
-                })
+                platform ->
+                    platformRepository
+                        .findByName(platform.getName())
+                        .orElse(platformRepository.save(platform)))
             .collect(Collectors.toSet());
     game.setPlatforms(processedPlatforms);
   }
