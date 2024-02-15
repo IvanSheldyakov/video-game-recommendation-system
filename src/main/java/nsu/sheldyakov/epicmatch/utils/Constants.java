@@ -18,5 +18,7 @@ public final class Constants {
     "bg-pastel13", "bg-pastel14", "bg-pastel15", "bg-pastel16"
   };
 
+  public static final String PATH_TO_POS_TAGGER = "/en-pos-maxent.bin";
+
   private Constants() {}
 }

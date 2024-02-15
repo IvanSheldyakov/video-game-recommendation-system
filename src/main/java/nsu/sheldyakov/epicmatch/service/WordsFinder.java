@@ -1,43 +1,42 @@
 package nsu.sheldyakov.epicmatch.service;
 
-import java.io.IOException;
+import static nsu.sheldyakov.epicmatch.utils.Constants.*;
+
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import nsu.sheldyakov.epicmatch.utils.Constants;
+import java.util.*;
+import nsu.sheldyakov.epicmatch.exception.ServiceException;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.tokenize.SimpleTokenizer;
 
 public class WordsFinder {
 
-  public HashMap<String, List<String>> find(String text) throws IOException {
+  private static final Set<String> NEEDED_TAGS = Set.of(ADJECTIVE, NOUN, NOUNS);
+
+  public List<String> find(String text) {
     SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String[] tokens = tokenizer.tokenize(text);
 
-    InputStream inputStreamPOSTagger = getClass().getResourceAsStream("/en-pos-maxent.bin");
+    try (InputStream inputStreamPOSTagger = getClass().getResourceAsStream(PATH_TO_POS_TAGGER)) {
+      POSModel posModel = new POSModel(Objects.requireNonNull(inputStreamPOSTagger));
+      POSTaggerME posTagger = new POSTaggerME(posModel);
+      String[] tags = posTagger.tag(tokens);
 
-    POSModel posModel = new POSModel(inputStreamPOSTagger);
-    POSTaggerME posTagger = new POSTaggerME(posModel);
-    String[] tags = posTagger.tag(tokens);
+      List<String> words = new ArrayList<>();
 
-    HashMap<String, List<String>> map = new HashMap<>();
-    map.put(Constants.ADJECTIVE, new ArrayList<>());
-    map.put(Constants.NOUN, new ArrayList<>());
-    map.put(Constants.NOUNS, new ArrayList<>());
-
-    for (int i = 0; i < tags.length; i++) {
-      String tag = tags[i];
-      if (map.containsKey(tag)) {
-        String token = tokens[i].toLowerCase(Locale.ROOT);
-        if (token.length() < 3) {
-          continue;
+      for (int i = 0; i < tags.length; i++) {
+        String tag = tags[i];
+        if (NEEDED_TAGS.contains(tag)) {
+          String token = tokens[i].toLowerCase(Locale.ROOT);
+          if (token.length() < 3) {
+            continue;
+          }
+          words.add(token);
         }
-        map.get(tag).add(token);
       }
+      return words;
+    } catch (Exception e) {
+      throw new ServiceException("WordsFinder is failed", e);
     }
-    return map;
   }
 }

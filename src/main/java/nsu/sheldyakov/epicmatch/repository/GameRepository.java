@@ -69,4 +69,12 @@ public interface GameRepository extends JpaRepository<Game, Integer> {
       String rating,
       LocalDate releaseStartDate,
       LocalDate releaseEndDate);
+
+  @Query(
+      value =
+          """
+            select * from game_info where vector is null limit 4
+            """,
+      nativeQuery = true)
+  List<Game> findNotAnalyzedGames();
 }
