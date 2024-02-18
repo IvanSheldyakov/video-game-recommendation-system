@@ -10,7 +10,6 @@ import nsu.sheldyakov.epicmatch.domain.Type;
 import nsu.sheldyakov.epicmatch.domain.WordCount;
 import nsu.sheldyakov.epicmatch.repository.GameRepository;
 import nsu.sheldyakov.epicmatch.repository.WordCountRepository;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +22,6 @@ public class DescriptionAnalyzer {
   private final WordsFinder wordsFinder;
   private final WordCountRepository wordCountRepository;
 
-  @Async("taskExecutor")
   @Transactional
   public void calculateGameVectorAndSaveWordsStatistics(Game game) {
 
@@ -52,7 +50,6 @@ public class DescriptionAnalyzer {
     return (int) words.parallelStream().filter(keyWords::contains).count();
   }
 
-  // подумать как сделать этот метод возможным в паралель saveAll
   private void countWordsForFindingNewKeywords(Type type, List<String> words) {
 
     Set<WordCount> wordCountsToSave = new HashSet<>();
