@@ -22,6 +22,9 @@ public class WordCount {
   @JoinColumn(name = "type")
   private Type type;
 
+  @Column(name = "in_games")
+  private Long inGames;
+
   @Override
   public final boolean equals(Object o) {
     if (this == o) return true;

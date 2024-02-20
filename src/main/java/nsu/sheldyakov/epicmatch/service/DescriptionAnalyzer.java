@@ -64,6 +64,7 @@ public class DescriptionAnalyzer {
           if (maybeWordCount.isPresent()) {
             WordCount wordCount = maybeWordCount.get();
             wordCount.setCount(wordCount.getCount() + count);
+            wordCount.setInGames(wordCount.getInGames() + 1);
             wordCountsToSave.add(wordCount);
           } else {
             WordCount newWordCount = new WordCount();
