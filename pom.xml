@@ -162,6 +162,7 @@
 				<configuration>
 					<user>postgres</user>
 					<password>1703</password>
+					<url>jdbc:postgresql://localhost:5432/parser_db</url>
 					<schemas>
 						<schema>public</schema>
 					</schemas>
@@ -169,6 +170,12 @@
 			</plugin>
 
 		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
 	</build>
 
 </project>

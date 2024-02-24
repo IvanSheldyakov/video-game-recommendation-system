@@ -2,11 +2,12 @@ package nsu.sheldyakov.epicmatch.service;
 
 import static nsu.sheldyakov.epicmatch.utils.VectorNormalizer.normalize;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import nsu.sheldyakov.epicmatch.domain.Game;
-import nsu.sheldyakov.epicmatch.domain.Type;
 import nsu.sheldyakov.epicmatch.domain.WordCount;
 import nsu.sheldyakov.epicmatch.repository.GameRepository;
 import nsu.sheldyakov.epicmatch.repository.WordCountRepository;
@@ -24,18 +25,10 @@ public class DescriptionAnalyzer {
 
   @Transactional
   public void calculateGameVectorAndSaveWordsStatistics(Game game) {
-
     List<String> wordsFromDescription = wordsFinder.find(game.getDescription());
-    Double[] vector = calculateGameVector(wordsFromDescription);
-    game.setVector(vector);
-    gameRepository.save(game);
-    countWordsForFindingNewKeywords(getTypeByVector(vector), wordsFromDescription);
-  }
-
-  private Type getTypeByVector(Double[] vector) {
-    var list = Arrays.stream(vector).toList();
-    Integer idOfType = list.indexOf(Collections.max(list));
-    return keywordsService.getVectorPositionAndTypeMap().get(idOfType);
+    game.setVector(calculateGameVector(wordsFromDescription));
+    Game savedGame = gameRepository.save(game);
+    countWordsForFindingNewKeywords(savedGame, wordsFromDescription);
   }
 
   private Double[] calculateGameVector(List<String> words) {
@@ -50,30 +43,27 @@ public class DescriptionAnalyzer {
     return (int) words.parallelStream().filter(keyWords::contains).count();
   }
 
-  private void countWordsForFindingNewKeywords(Type type, List<String> words) {
+  private void countWordsForFindingNewKeywords(Game game, List<String> words) {
 
-    Set<WordCount> wordCountsToSave = new HashSet<>();
+    Long amountOfWordsInDescription = (long) words.size();
+
     Map<String, Long> wordCounts =
-        words.stream()
-            .parallel()
-            .collect(Collectors.groupingBy(word -> word, Collectors.counting()));
+        words.parallelStream().collect(Collectors.groupingBy(word -> word, Collectors.counting()));
 
-    wordCounts.forEach(
-        (word, count) -> {
-          Optional<WordCount> maybeWordCount = wordCountRepository.findByWordAndType(word, type);
-          if (maybeWordCount.isPresent()) {
-            WordCount wordCount = maybeWordCount.get();
-            wordCount.setCount(wordCount.getCount() + count);
-            wordCount.setInGames(wordCount.getInGames() + 1);
-            wordCountsToSave.add(wordCount);
-          } else {
-            WordCount newWordCount = new WordCount();
-            newWordCount.setCount(count);
-            newWordCount.setType(type);
-            newWordCount.setWord(word);
-            wordCountsToSave.add(newWordCount);
-          }
-        });
+    Set<WordCount> wordCountsToSave =
+        wordCounts.entrySet().parallelStream()
+            .map(entry -> map(game, amountOfWordsInDescription, entry))
+            .collect(Collectors.toSet());
+
     wordCountRepository.saveAll(wordCountsToSave);
+  }
+
+  private WordCount map(Game game, Long amountOfWordsInDescription, Map.Entry<String, Long> entry) {
+    return new WordCount(
+        entry.getKey(), getRelativeFrequency(amountOfWordsInDescription, entry.getValue()), game);
+  }
+
+  private double getRelativeFrequency(Long amountOfWordsInDescription, Long value) {
+    return value.doubleValue() / amountOfWordsInDescription.doubleValue();
   }
 }

@@ -51,9 +51,9 @@ create table if not exists game_platform(
 
 create table if not exists word_count(
     word text,
-    type text references game_type(name),
-    count bigint,
-    primary key (word, type)
+    relative_frequency double precision,
+    game_id integer references game_info(id),
+    primary key (word, game_id)
 );
 
 CREATE OR REPLACE FUNCTION calculate_cosine_similarity(vectorA_str text, vectorB double precision[])

@@ -12,7 +12,6 @@ import nsu.sheldyakov.epicmatch.model.Page;
 import nsu.sheldyakov.epicmatch.model.SearchCriteria;
 import nsu.sheldyakov.epicmatch.repository.*;
 import nsu.sheldyakov.epicmatch.utils.VectorNormalizer;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -33,27 +32,19 @@ public class GameInfoService {
   }
 
   public List<String> getPublishers() {
-    return publisherRepository.findAll(Sort.by(Sort.Order.asc("publisher"))).stream()
-        .map(Publisher::getName)
-        .toList();
+    return publisherRepository.findAll().stream().map(Publisher::getName).toList();
   }
 
   public List<String> getGenres() {
-    return genreRepository.findAll(Sort.by(Sort.Order.asc("genre"))).stream()
-        .map(Genre::getName)
-        .toList();
+    return genreRepository.findAll().stream().map(Genre::getName).toList();
   }
 
   public List<String> getPlatforms() {
-    return platformRepository.findAll(Sort.by(Sort.Order.asc("platform"))).stream()
-        .map(Platform::getName)
-        .toList();
+    return platformRepository.findAll().stream().map(Platform::getName).toList();
   }
 
   public List<String> getRatings() {
-    return ratingRepository.findAll(Sort.by(Sort.Order.asc("rating"))).stream()
-        .map(Rating::getName)
-        .toList();
+    return ratingRepository.findAll().stream().map(Rating::getName).toList();
   }
 
   public Page getPageOfGameInfos(SearchCriteria searchCriteria, int page) {

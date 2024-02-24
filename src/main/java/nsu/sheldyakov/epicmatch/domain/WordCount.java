@@ -1,10 +1,9 @@
 package nsu.sheldyakov.epicmatch.domain;
 
+import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 @Entity
@@ -14,16 +13,33 @@ import org.hibernate.proxy.HibernateProxy;
 @NoArgsConstructor
 public class WordCount {
 
-  @Id private String word;
+  @EmbeddedId private WordCountId id;
 
-  private Long count;
+  @Column(name = "relative_frequency")
+  private Double relativeFrequency;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "type")
-  private Type type;
+  @JoinColumn(name = "game_id", insertable = false, updatable = false)
+  private Game game;
 
-  @Column(name = "in_games")
-  private Long inGames;
+  @Embeddable
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  public static class WordCountId implements Serializable {
+
+    @Column(name = "word")
+    private String word;
+
+    @Column(name = "game_id")
+    private Integer gameId;
+  }
+
+  public WordCount(String word, Double relativeFrequency, Game game) {
+    this.relativeFrequency = relativeFrequency;
+    this.game = game;
+    this.id = new WordCountId(word, game.getId());
+  }
 
   @Override
   public final boolean equals(Object o) {
@@ -39,13 +55,11 @@ public class WordCount {
             : this.getClass();
     if (thisEffectiveClass != oEffectiveClass) return false;
     WordCount wordCount = (WordCount) o;
-    return getWord() != null && Objects.equals(getWord(), wordCount.getWord());
+    return getId() != null && Objects.equals(getId(), wordCount.getId());
   }
 
   @Override
   public final int hashCode() {
-    return this instanceof HibernateProxy
-        ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode()
-        : getClass().hashCode();
+    return Objects.hash(id);
   }
 }
