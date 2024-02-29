@@ -1,6 +1,6 @@
 package nsu.sheldyakov.epicmatch.service;
 
-import static nsu.sheldyakov.epicmatch.utils.VectorNormalizer.normalize;
+import static nsu.sheldyakov.epicmatch.utils.Constants.VECTOR_SIZE;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,17 @@ public class DescriptionAnalyzer {
         keywordsService.getTypeAndKeyWordsMap().values().stream()
             .map(keyWords -> getCountOfMatches(words, keyWords))
             .toList();
-    return normalize(vector);
+    return getNormalizedVectorConsideringAmountOfKeyWordsForType(
+        vector); // TODO нормалиция нужна в другом месте
+  }
+
+  private Double[] getNormalizedVectorConsideringAmountOfKeyWordsForType(List<Integer> vector) {
+    Double[] normalizedVectorConsideringAmountOfKeyWordsForType = new Double[VECTOR_SIZE];
+    for (int i = 0; i < vector.size(); i++) {
+      normalizedVectorConsideringAmountOfKeyWordsForType[i] =
+          vector.get(i) / (double) keywordsService.getAmountOfKeyWordsByVectorPosition(i);
+    }
+    return normalizedVectorConsideringAmountOfKeyWordsForType;
   }
 
   private int getCountOfMatches(List<String> words, List<String> keyWords) {

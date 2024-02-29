@@ -1,6 +1,5 @@
 package nsu.sheldyakov.epicmatch.service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,6 @@ import nsu.sheldyakov.epicmatch.model.GameTypeBlock;
 import nsu.sheldyakov.epicmatch.model.Page;
 import nsu.sheldyakov.epicmatch.model.SearchCriteria;
 import nsu.sheldyakov.epicmatch.repository.*;
-import nsu.sheldyakov.epicmatch.utils.VectorNormalizer;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -48,7 +46,7 @@ public class GameInfoService {
   }
 
   public Page getPageOfGameInfos(SearchCriteria searchCriteria, int page) {
-    String vector = convertListToStringAndNormalize(searchCriteria.getCustomValues());
+    String vector = convertListToString(searchCriteria.getCustomValues());
 
     long count =
         gameRepository.countGameInfoByFilter(
@@ -86,9 +84,8 @@ public class GameInfoService {
     return new GameTypeBlock(type.getName(), type.getDescription());
   }
 
-  private String convertListToStringAndNormalize(List<String> list) {
+  private String convertListToString(List<String> list) {
     List<Integer> integerList = list.stream().map(Integer::parseInt).toList();
-    Double[] vector = VectorNormalizer.normalize(integerList);
-    return Arrays.stream(vector).map(String::valueOf).collect(Collectors.joining(","));
+    return integerList.stream().map(String::valueOf).collect(Collectors.joining(","));
   }
 }

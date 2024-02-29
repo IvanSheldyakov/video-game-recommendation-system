@@ -1,5 +1,7 @@
 package nsu.sheldyakov.epicmatch.service;
 
+import static nsu.sheldyakov.epicmatch.utils.Constants.STEP_TO_UPDATE_KEY_WORDS;
+
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +43,7 @@ public class GameAnalyzer {
 
         long countAnalyzedGames = gameRepository.countAnalyzedGames();
         log.info("Amount of analyzed games - {}", countAnalyzedGames);
-        if (countAnalyzedGames % 160 == 0) {
+        if (countAnalyzedGames % STEP_TO_UPDATE_KEY_WORDS == 0) {
           // update block words
           keyWordsService.updateKeyWords();
         }
