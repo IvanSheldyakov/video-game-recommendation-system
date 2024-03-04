@@ -2,6 +2,7 @@ package nsu.sheldyakov.epicmatch.domain;
 
 import java.util.Objects;
 import javax.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,13 +12,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class BlockWord {
 
   @Id private String word;
-
-  public BlockWord(String word) {
-    this.word = word;
-  }
 
   @Override
   public boolean equals(Object o) {

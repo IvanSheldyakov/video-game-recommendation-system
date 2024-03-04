@@ -20,7 +20,7 @@ public final class Constants {
 
   public static final String PATH_TO_POS_TAGGER = "/en-pos-maxent.bin";
 
-  public static final int STEP_TO_UPDATE_KEY_WORDS = 480;
+  public static final int STEP_TO_UPDATE_KEY_WORDS = 200; // TODO
 
   public static final int VECTOR_SIZE = 16;
 

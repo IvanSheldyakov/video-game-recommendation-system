@@ -44,8 +44,9 @@ public class GameAnalyzer {
         long countAnalyzedGames = gameRepository.countAnalyzedGames();
         log.info("Amount of analyzed games - {}", countAnalyzedGames);
         if (countAnalyzedGames % STEP_TO_UPDATE_KEY_WORDS == 0) {
-          // update block words
+          log.info("Start update key words");
           keyWordsService.updateKeyWords();
+          log.info("End update key words");
         }
 
       } finally {

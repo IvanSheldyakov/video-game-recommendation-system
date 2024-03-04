@@ -25,7 +25,10 @@ public class DescriptionAnalyzer {
 
   @Transactional
   public void calculateGameVectorAndSaveWordsStatistics(Game game) {
-    List<String> wordsFromDescription = wordsFinder.find(game.getDescription());
+    List<String> wordsFromDescription =
+        wordsFinder.find(game.getDescription()).stream()
+            .filter(word -> !keywordsService.getBlockWords().contains(word))
+            .toList();
     game.setVector(calculateGameVector(wordsFromDescription));
     Game savedGame = gameRepository.save(game);
     countWordsForFindingNewKeywords(savedGame, wordsFromDescription);
@@ -36,8 +39,7 @@ public class DescriptionAnalyzer {
         keywordsService.getTypeAndKeyWordsMap().values().stream()
             .map(keyWords -> getCountOfMatches(words, keyWords))
             .toList();
-    return getNormalizedVectorConsideringAmountOfKeyWordsForType(
-        vector); // TODO нормалиция нужна в другом месте
+    return getNormalizedVectorConsideringAmountOfKeyWordsForType(vector);
   }
 
   private Double[] getNormalizedVectorConsideringAmountOfKeyWordsForType(List<Integer> vector) {
@@ -58,7 +60,9 @@ public class DescriptionAnalyzer {
     Long amountOfWordsInDescription = (long) words.size();
 
     Map<String, Long> wordCounts =
-        words.parallelStream().collect(Collectors.groupingBy(word -> word, Collectors.counting()));
+        words.parallelStream()
+            .filter(word -> !keywordsService.getAllKeyWords().contains(word))
+            .collect(Collectors.groupingBy(word -> word, Collectors.counting()));
 
     Set<WordCount> wordCountsToSave =
         wordCounts.entrySet().parallelStream()

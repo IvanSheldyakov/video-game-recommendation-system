@@ -9,10 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import nsu.sheldyakov.epicmatch.domain.KeyWord;
-import nsu.sheldyakov.epicmatch.domain.KeyWordCandidate;
-import nsu.sheldyakov.epicmatch.domain.Type;
-import nsu.sheldyakov.epicmatch.domain.WordCount;
+import nsu.sheldyakov.epicmatch.domain.*;
 import nsu.sheldyakov.epicmatch.mapper.KeyWordMapper;
 import nsu.sheldyakov.epicmatch.repository.*;
 import org.apache.commons.math3.linear.ArrayRealVector;
@@ -30,19 +27,24 @@ public class KeyWordsService {
   private final BlockWordRepository blockWordRepository;
   private final KeyWordCandidateRepository keyWordCandidateRepository;
   private final KeyWordMapper keyWordMapper;
+  private final TransactionWrapper transactionWrapper;
 
   private boolean needBlock = false;
 
   private Map<Type, List<String>> typeAndKeyWordsMap;
   private Map<Integer, Type> vectorPositionAndTypeMap;
 
+  private List<String> blockWords;
+  private List<String> allKeyWords;
+
   public static final int WORD_LIMIT = 100;
 
   @Transactional
   public void updateKeyWords() {
-    prepareKeyWordsCandidates();
+    transactionWrapper.wrapInTransaction(this::prepareKeyWordsCandidates);
     findAndSaveNewKeyWords();
     keyWordCandidateRepository.deleteAll();
+    updateKeyWordsConnectedCollections();
   }
 
   private void findAndSaveNewKeyWords() {
@@ -122,9 +124,18 @@ public class KeyWordsService {
   }
 
   @PostConstruct
-  public void init() { // TODO после обновления кл слов пересобрать
-    updateTypeAndKeyWordsMap();
+  public void init() {
+    updateKeyWordsConnectedCollections();
     collectVectorPositionAndTypeMap();
+    blockWords = blockWordRepository.findAll().stream().map(BlockWord::getWord).toList();
+  }
+
+  public List<String> getBlockWords() {
+    return blockWords;
+  }
+
+  public List<String> getAllKeyWords() {
+    return allKeyWords;
   }
 
   public int getAmountOfKeyWordsByVectorPosition(int position) {
@@ -151,8 +162,9 @@ public class KeyWordsService {
     return vectorPositionAndTypeMap;
   }
 
-  private void updateTypeAndKeyWordsMap() {
+  private void updateKeyWordsConnectedCollections() {
     typeAndKeyWordsMap = collectTypeAndKeyWordsMap();
+    allKeyWords = typeAndKeyWordsMap.values().stream().flatMap(List::stream).toList();
   }
 
   private Map<Type, List<String>> collectTypeAndKeyWordsMap() {
