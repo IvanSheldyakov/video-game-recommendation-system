@@ -29,4 +29,7 @@ values ('game'),
        ('review'),
        ('server'),
        ('time'),
-       ('feature');
+       ('feature'),
+       ('features'),
+       ('masterpieces'),
+       ('masterpiece');

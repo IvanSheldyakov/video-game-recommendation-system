@@ -83,8 +83,8 @@ public class KeyWordsService {
             double sumTfidf = 0;
             for (WordCount wordCount : wordCounts) {
               RealVector vector = new ArrayRealVector(wordCount.getGame().getVector());
-              sumVector.add(vector.mapMultiply(wordCount.getRelativeFrequency()));
-              sumTfidf = wordCount.getRelativeFrequency() * idf;
+              sumVector = sumVector.add(vector.mapMultiply(wordCount.getRelativeFrequency()));
+              sumTfidf += wordCount.getRelativeFrequency() * idf;
             }
 
             RealVector averageVector = sumVector.mapDivide(amountOfGames);
