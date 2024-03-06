@@ -1,5 +1,6 @@
 package nsu.sheldyakov.epicmatch.model;
 
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
@@ -18,4 +19,16 @@ public class GameInfo {
   private String publisher;
   private String platform;
   private String genre;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof GameInfo gameInfo)) return false;
+    return Objects.equals(getId(), gameInfo.getId());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getId());
+  }
 }

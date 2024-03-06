@@ -1,5 +1,6 @@
 package nsu.sheldyakov.epicmatch.service;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +76,12 @@ public class GameInfoService {
             LIMIT,
             offset);
 
-    List<GameInfo> gameInfos = games.stream().map(gameMapper::map).toList();
+    List<GameInfo> gameInfos =
+        games.stream()
+            .map(gameMapper::map)
+            .collect(Collectors.toCollection(LinkedHashSet::new))
+            .stream()
+            .collect(Collectors.toList());
 
     return new Page(totalPages, gameInfos);
   }
@@ -85,7 +91,9 @@ public class GameInfoService {
   }
 
   private String convertListToString(List<String> list) {
-    List<Integer> integerList = list.stream().map(Integer::parseInt).toList();
-    return integerList.stream().map(String::valueOf).collect(Collectors.joining(","));
+    return list.stream()
+        .map(Integer::parseInt)
+        .map(String::valueOf)
+        .collect(Collectors.joining(","));
   }
 }
